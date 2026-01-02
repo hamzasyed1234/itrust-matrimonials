@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SignUp from './SignUp';
 import './LandingPage.css';
 
 function LandingPage() {
@@ -115,25 +116,11 @@ function LandingPage() {
         </div>
       )}
 
-      {/* Sign Up Modal Placeholder */}
+      {/* Sign Up Modal */}
       {showSignUp && (
         <div className="modal-overlay" onClick={() => setShowSignUp(false)}>
-          <div className="modal-content signup-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setShowSignUp(false)}>✕</button>
-            <h2 className="modal-title accent-text">Create Account</h2>
-            <p className="subtitle">Choose your account type to get started</p>
-            
-            <div className="account-options">
-              <div className="account-option">
-                <span className="option-icon">👤</span>
-                <div>
-                  <h3>Personal Account</h3>
-                  <p>For individual use</p>
-                </div>
-                <span className="arrow">→</span>
-              </div>
-            </div>
-            <p className="info-text">We'll build the full signup form next!</p>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <SignUp onClose={() => setShowSignUp(false)} />
           </div>
         </div>
       )}
