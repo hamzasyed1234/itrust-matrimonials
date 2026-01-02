@@ -23,6 +23,10 @@ app.get('/', (req, res) => {
   res.json({ message: 'iTrust Matrimonials API' });
 });
 
+// Routes
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected'))
