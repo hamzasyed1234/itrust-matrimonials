@@ -27,6 +27,9 @@ app.get('/', (req, res) => {
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+const profileRoutes = require('./routes/profileRoutes');
+app.use('/api/profile', profileRoutes);
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected'))
