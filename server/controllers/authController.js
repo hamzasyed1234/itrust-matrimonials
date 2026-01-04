@@ -28,6 +28,11 @@ exports.register = async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
+    console.log('=== NEW USER REGISTRATION ===');
+    console.log('Email:', email);
+    console.log('Generated token:', verificationToken);
+    console.log('Token expires:', new Date(verificationExpires));
+
     // Create new user
     const user = new User({
       firstName,
@@ -41,6 +46,7 @@ exports.register = async (req, res) => {
     });
 
     await user.save();
+    console.log('User saved to database');
 
     // Send verification email
     await sendVerificationEmail(email, verificationToken);
@@ -60,20 +66,43 @@ exports.register = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
+    
+    console.log('=== EMAIL VERIFICATION REQUEST ===');
+    console.log('Token received:', token);
+    console.log('Token length:', token.length);
+    console.log('Token type:', typeof token);
+    console.log('Current time:', new Date());
 
     const user = await User.findOne({
       emailVerificationToken: token,
       emailVerificationExpires: { $gt: Date.now() }
     });
 
+    console.log('User found:', user ? 'Yes' : 'No');
+    
     if (!user) {
+      console.log('No user found with this token or token expired');
+      
+      // Let's check if a user exists with this token (even if expired)
+      const expiredUser = await User.findOne({ emailVerificationToken: token });
+      console.log('User with expired token exists:', expiredUser ? 'Yes' : 'No');
+      
+      if (expiredUser) {
+        console.log('Token expiry was:', new Date(expiredUser.emailVerificationExpires));
+        console.log('Token has expired');
+      }
+      
       return res.status(400).json({ message: 'Invalid or expired verification token' });
     }
+
+    console.log('Verifying email for user:', user.email);
 
     user.isEmailVerified = true;
     user.emailVerificationToken = undefined;
     user.emailVerificationExpires = undefined;
     await user.save();
+
+    console.log('Email verified successfully for:', user.email);
 
     res.status(200).json({ message: 'Email verified successfully!' });
 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import api from '../utils/api';
 import './SignUp.css';
 
-function SignUp({ onClose, onSuccess }) {
-  const [step, setStep] = useState(1); // Step 1 or Step 2
+function SignUp({ onClose, onSwitchToLogin }) {
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -22,7 +23,6 @@ function SignUp({ onClose, onSuccess }) {
       ...prev,
       [name]: value
     }));
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -34,17 +34,14 @@ function SignUp({ onClose, onSuccess }) {
   const validateStep1 = () => {
     const newErrors = {};
 
-    // First Name validation
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
 
-    // Last Name validation
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     }
 
-    // Date of Birth validation
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = 'Date of birth is required';
     } else {
@@ -54,7 +51,6 @@ function SignUp({ onClose, onSuccess }) {
       }
     }
 
-    // Gender validation
     if (!formData.gender) {
       newErrors.gender = 'Please select your gender';
     }
@@ -66,21 +62,18 @@ function SignUp({ onClose, onSuccess }) {
   const validateStep2 = () => {
     const newErrors = {};
 
-    // Email validation
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    // Confirm Password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
@@ -112,18 +105,30 @@ function SignUp({ onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      // API call will go here
-      console.log('Form submitted:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Send registration data to backend
+      const response = await api.post('/auth/register', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        email: formData.email,
+        password: formData.password
+      });
 
-      // Success - show success message
-      alert('Registration successful! Please check your email to verify your account.');
+      // Show success message
+      alert(response.data.message || 'Registration successful! Please check your email to verify your account.');
+      
+      // Close the modal
       onClose();
     } catch (error) {
       console.error('Registration error:', error);
-      setErrors({ submit: 'Registration failed. Please try again.' });
+      
+      // Handle specific error messages from backend
+      if (error.response && error.response.data && error.response.data.message) {
+        setErrors({ submit: error.response.data.message });
+      } else {
+        setErrors({ submit: 'Registration failed. Please try again.' });
+      }
     } finally {
       setLoading(false);
     }
@@ -227,6 +232,11 @@ function SignUp({ onClose, onSuccess }) {
           <button type="button" className="submit-btn" onClick={handleNext}>
             Next →
           </button>
+
+          {/* Login Link - Now on Step 1 */}
+          <p className="login-link">
+            Already have an account? <span onClick={onSwitchToLogin}>Log In</span>
+          </p>
         </div>
       )}
 
@@ -294,11 +304,6 @@ function SignUp({ onClose, onSuccess }) {
               {loading ? 'Creating...' : 'Create Account'}
             </button>
           </div>
-
-          {/* Login Link */}
-          <p className="login-link">
-            Already have an account? <span onClick={onClose}>Log In</span>
-          </p>
         </form>
       )}
     </div>

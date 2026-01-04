@@ -1,11 +1,22 @@
 import React, { useState } from 'react';
 import SignUp from './SignUp';
+import Login from './Login';
 import './LandingPage.css';
 
 function LandingPage() {
   const [showSignUp, setShowSignUp] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+
+  const handleSwitchToSignUp = () => {
+    setShowLogin(false);
+    setShowSignUp(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowSignUp(false);
+    setShowLogin(true);
+  };
 
   return (
     <div className="landing-page">
@@ -120,18 +131,22 @@ function LandingPage() {
       {showSignUp && (
         <div className="modal-overlay" onClick={() => setShowSignUp(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <SignUp onClose={() => setShowSignUp(false)} />
+            <SignUp 
+              onClose={() => setShowSignUp(false)} 
+              onSwitchToLogin={handleSwitchToLogin}
+            />
           </div>
         </div>
       )}
 
-      {/* Login Modal Placeholder */}
+      {/* Login Modal */}
       {showLogin && (
         <div className="modal-overlay" onClick={() => setShowLogin(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setShowLogin(false)}>✕</button>
-            <h2 className="modal-title accent-text">Log In</h2>
-            <p className="info-text">Login form coming next!</p>
+            <Login 
+              onClose={() => setShowLogin(false)}
+              onSwitchToSignUp={handleSwitchToSignUp}
+            />
           </div>
         </div>
       )}
