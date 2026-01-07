@@ -1,0 +1,258 @@
+.home-page {
+  min-height: 100vh;
+  background-color: #272727;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: #E66386;
+  font-size: 24px;
+}
+
+/* Main Content */
+.home-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.welcome-section {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.welcome-section h1 {
+  font-size: 42px;
+  color: white;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #E66386 0%, #ff7fa0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-text {
+  color: #999999;
+  font-size: 18px;
+}
+
+/* Alert Box */
+.alert-box {
+  background: linear-gradient(135deg, rgba(230, 99, 134, 0.1) 0%, rgba(255, 127, 160, 0.1) 100%);
+  border: 2px solid #E66386;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 32px;
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(230, 99, 134, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(230, 99, 134, 0);
+  }
+}
+
+.alert-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.alert-content h3 {
+  color: #E66386;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.alert-content p {
+  color: #cccccc;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.alert-btn {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #E66386 0%, #ff7fa0 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(230, 99, 134, 0.3);
+  white-space: nowrap;
+  margin-top: 20px;
+}
+
+.alert-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(230, 99, 134, 0.5);
+}
+
+/* Profile Card */
+.profile-card {
+  background: linear-gradient(135deg, #383838 0%, #2f2f2f 100%);
+  border: 1px solid rgba(230, 99, 134, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.profile-card h2 {
+  color: white;
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background-color: #272727;
+  border-radius: 8px;
+  gap: 12px;
+}
+
+.info-label {
+  color: #999999;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.info-value {
+  color: white;
+  font-size: 15px;
+  word-break: break-word;
+  text-align: right;
+}
+
+.info-value.complete {
+  color: #4caf50;
+}
+
+.info-value.incomplete {
+  color: #ff9800;
+}
+
+.edit-profile-btn {
+  padding: 12px 24px;
+  background: rgba(230, 99, 134, 0.1);
+  color: #E66386;
+  border: 2px solid #E66386;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-profile-btn:hover {
+  background: rgba(230, 99, 134, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Coming Soon Section */
+.coming-soon {
+  text-align: center;
+  margin-top: 60px;
+}
+
+.coming-soon h2 {
+  color: white;
+  font-size: 32px;
+  margin-bottom: 32px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.feature-card {
+  background: linear-gradient(135deg, #383838 0%, #2f2f2f 100%);
+  border: 1px solid rgba(230, 99, 134, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  border-color: #E66386;
+  box-shadow: 0 10px 30px rgba(230, 99, 134, 0.2);
+}
+
+.feature-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.feature-card h3 {
+  color: white;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.feature-card p {
+  color: #999999;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .welcome-section h1 {
+    font-size: 32px;
+  }
+
+  .alert-box {
+    padding: 24px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-value {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-content {
+    padding: 20px 16px;
+  }
+
+  .welcome-section h1 {
+    font-size: 28px;
+  }
+
+  .alert-btn {
+    width: 100%;
+  }
+}

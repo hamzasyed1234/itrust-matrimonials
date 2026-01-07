@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import api from '../utils/api';
 
 export const AuthContext = createContext();
@@ -6,42 +6,49 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
 
-  const fetchUserProfile = useCallback(async () => {
+  // Fetch user profile on mount if token exists
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      fetchUserProfile();
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchUserProfile = async () => {
     try {
       const response = await api.get('/profile');
       setUser(response.data.user);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      logout();
+      // If token is invalid, clear it
+      localStorage.removeItem('token');
+      setUser(null);
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    if (token) {
-      fetchUserProfile();
-    } else {
-      setLoading(false);
-    }
-  }, [token, fetchUserProfile]);
+  };
 
   const login = (token, userData) => {
     localStorage.setItem('token', token);
-    setToken(token);
     setUser(userData);
+    setLoading(false);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    setToken(null);
     setUser(null);
   };
 
+  const updateUser = (updatedUserData) => {
+    setUser(updatedUserData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

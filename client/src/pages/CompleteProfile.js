@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import api from '../utils/api';
 import './CompleteProfile.css';
 
 function CompleteProfile() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useContext(AuthContext);
   const [formData, setFormData] = useState({
-    profilePicture: '',
+    profilePicture: null,
     ethnicity: '',
     height: '',
     birthPlace: '',
@@ -19,6 +21,14 @@ function CompleteProfile() {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+
+  // Redirect to landing if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/');
+    }
+  }, [user, authLoading, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,6 +41,49 @@ function CompleteProfile() {
         ...prev,
         [name]: ''
       }));
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check if file is an image
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({
+          ...prev,
+          profilePicture: 'Please select an image file'
+        }));
+        return;
+      }
+
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({
+          ...prev,
+          profilePicture: 'Image size should be less than 5MB'
+        }));
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        profilePicture: file
+      }));
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+
+      // Clear error
+      if (errors.profilePicture) {
+        setErrors(prev => ({
+          ...prev,
+          profilePicture: ''
+        }));
+      }
     }
   };
 
@@ -52,7 +105,26 @@ function CompleteProfile() {
     setLoading(true);
 
     try {
-      const response = await api.put('/profile/update', formData);
+      // Create FormData for file upload
+      const submitData = new FormData();
+      
+      if (formData.profilePicture) {
+        submitData.append('profilePicture', formData.profilePicture);
+      }
+      submitData.append('ethnicity', formData.ethnicity);
+      submitData.append('height', formData.height);
+      submitData.append('birthPlace', formData.birthPlace);
+      submitData.append('currentLocation', formData.currentLocation);
+      submitData.append('profession', formData.profession);
+      submitData.append('education', formData.education);
+      submitData.append('languages', JSON.stringify(formData.languages));
+      submitData.append('bio', formData.bio);
+
+      const response = await api.put('/profile/update', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       console.log('Profile updated:', response.data);
 
       // Navigate to home page
@@ -70,11 +142,25 @@ function CompleteProfile() {
     }
   };
 
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="complete-profile-page">
+        <div className="loading">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="complete-profile-page">
       <div className="complete-profile-container">
-        <div className="logo">
-          <span className="heart-icon">❤️</span> iTrust Matrimonials
+        <div className="complete-profile-logo">
+          <span className="complete-profile-heart-icon">❤️</span> iTrust Matrimonials
         </div>
 
         <div className="profile-header">
@@ -85,18 +171,38 @@ function CompleteProfile() {
         </div>
 
         <form onSubmit={handleSubmit} className="profile-form">
-          {/* Profile Picture URL */}
+          {/* Profile Picture Upload */}
           <div className="form-group">
-            <label htmlFor="profilePicture">Profile Picture URL</label>
+            <label htmlFor="profilePicture">Profile Picture</label>
+            
+            {previewImage && (
+              <div className="image-preview">
+                <img src={previewImage} alt="Preview" />
+              </div>
+            )}
+            
+            <label htmlFor="profilePictureInput" className="file-upload-label">
+              <span className="upload-icon">📷</span>
+              <span className="upload-text-desktop">Upload from Computer</span>
+              <span className="upload-text-mobile">Take Photo / Select from Photos</span>
+              {formData.profilePicture && (
+                <span className="file-name">{formData.profilePicture.name}</span>
+              )}
+            </label>
+            
             <input
-              type="url"
-              id="profilePicture"
-              name="profilePicture"
-              value={formData.profilePicture}
-              onChange={handleChange}
-              placeholder="Enter image URL"
+              type="file"
+              id="profilePictureInput"
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageChange}
+              className="file-input"
             />
-            <span className="helper-text">For now, paste an image URL (e.g., from Imgur)</span>
+            
+            {errors.profilePicture && (
+              <span className="error-text">{errors.profilePicture}</span>
+            )}
+            <span className="helper-text">Max size: 5MB. Formats: JPG, PNG, WebP</span>
           </div>
 
           {/* Ethnicity */}

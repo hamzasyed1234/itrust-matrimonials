@@ -71,32 +71,32 @@
   }
 }
 
-/* Logo */
-.logo {
+/* Landing Page Logo - Make it specific to landing page only */
+.landing-page .landing-logo {
   position: absolute;
   top: 40px;
   left: 60px;
   z-index: 10;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background-color: #E66386;
   color: white;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-size: 20px;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 18px;
   font-weight: bold;
   box-shadow: 0 8px 25px rgba(230, 99, 134, 0.3);
   transition: all 0.3s ease;
 }
 
-.logo:hover {
+.landing-page .landing-logo:hover {
   transform: scale(1.05);
   box-shadow: 0 12px 35px rgba(230, 99, 134, 0.5);
 }
 
-.heart-icon {
-  font-size: 24px;
+.landing-page .landing-logo .heart-icon {
+  font-size: 20px;
   animation: heartbeat 1.5s ease-in-out infinite;
 }
 
@@ -478,7 +478,7 @@
     padding-top: 100px;
   }
 
-  .logo {
+  .landing-page .landing-logo {
     left: 20px;
     top: 20px;
   }
@@ -514,14 +514,14 @@
     padding: 20px 16px;
   }
 
-  .logo {
+  .landing-page .landing-logo {
     font-size: 16px;
     padding: 10px 18px;
     left: 16px;
     top: 16px;
   }
 
-  .heart-icon {
+  .landing-page .landing-logo .heart-icon {
     font-size: 20px;
   }
 
@@ -565,12 +565,12 @@
     font-size: 15px;
   }
 
-  .logo {
+  .landing-page .landing-logo {
     font-size: 14px;
     padding: 8px 16px;
   }
 
-  .heart-icon {
+  .landing-page .landing-logo .heart-icon {
     font-size: 18px;
   }
 

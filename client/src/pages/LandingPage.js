@@ -29,8 +29,8 @@ function LandingPage() {
         <span className="heart">💝</span>
       </div>
 
-      {/* Logo */}
-      <div className="logo">
+      {/* Logo - Changed class name to landing-logo */}
+      <div className="landing-logo">
         <span className="heart-icon">❤️</span> iTrust Matrimonials
       </div>
 

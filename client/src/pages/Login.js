@@ -1,9 +1,11 @@
 import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../utils/api';
 import './Login.css';
 
 function Login({ onClose, onSwitchToSignUp }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -64,13 +66,11 @@ function Login({ onClose, onSwitchToSignUp }) {
       // Close modal
       onClose();
 
-      // Check if profile is completed
+      // Navigate based on profile completion
       if (!response.data.user.profileCompleted) {
-        // Redirect to complete profile
-        window.location.href = '/complete-profile';
+        navigate('/complete-profile');
       } else {
-        // Redirect to home (we'll build this next)
-        window.location.href = '/home';
+        navigate('/home');
       }
 
     } catch (error) {

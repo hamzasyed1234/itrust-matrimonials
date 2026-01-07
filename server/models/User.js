@@ -48,14 +48,38 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  ethnicity: String,
-  height: String,
-  birthPlace: String,
-  currentLocation: String,
-  profession: String,
-  education: String,
-  languages: [String],
-  bio: String,
+  ethnicity: {
+    type: String,
+    default: ''
+  },
+  height: {
+    type: String,
+    default: ''
+  },
+  birthPlace: {
+    type: String,
+    default: ''
+  },
+  currentLocation: {
+    type: String,
+    default: ''
+  },
+  profession: {
+    type: String,
+    default: ''
+  },
+  education: {
+    type: String,
+    default: ''
+  },
+  languages: {
+    type: [String],
+    default: []
+  },
+  bio: {
+    type: String,
+    default: ''
+  },
   
   // Match system
   activeMatches: [{

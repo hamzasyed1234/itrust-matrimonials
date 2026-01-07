@@ -1,9 +1,16 @@
 const User = require('../models/User');
+const path = require('path');
+const fs = require('fs');
 
 // Get user profile
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findById(req.user.userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
     res.status(200).json({ user });
   } catch (error) {
     console.error('Get profile error:', error);
@@ -14,51 +21,75 @@ exports.getProfile = async (req, res) => {
 // Update profile (Phase 2)
 exports.updateProfile = async (req, res) => {
   try {
-    const {
-      profilePicture,
-      ethnicity,
-      height,
-      birthPlace,
-      currentLocation,
-      profession,
-      education,
-      languages,
-      bio
-    } = req.body;
-
-    const user = await User.findById(req.user._id);
+    const userId = req.user.userId;
+    
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update profile fields
-    if (profilePicture) user.profilePicture = profilePicture;
-    if (ethnicity) user.ethnicity = ethnicity;
-    if (height) user.height = height;
-    if (birthPlace) user.birthPlace = birthPlace;
-    if (currentLocation) user.currentLocation = currentLocation;
-    if (profession) user.profession = profession;
-    if (education) user.education = education;
-    if (languages) user.languages = languages;
-    if (bio) user.bio = bio;
+    // Parse languages from JSON string if it exists
+    let languages = user.languages;
+    if (req.body.languages) {
+      try {
+        const parsedLanguages = JSON.parse(req.body.languages);
+        if (Array.isArray(parsedLanguages) && parsedLanguages.length > 0) {
+          languages = parsedLanguages;
+        }
+      } catch (e) {
+        console.error('Error parsing languages:', e);
+      }
+    }
 
+    // Handle profile picture upload
+    if (req.file) {
+      // Delete old profile picture if it exists
+      if (user.profilePicture) {
+        const oldImagePath = path.join(__dirname, '..', user.profilePicture);
+        if (fs.existsSync(oldImagePath)) {
+          try {
+            fs.unlinkSync(oldImagePath);
+            console.log('Old profile picture deleted');
+          } catch (err) {
+            console.error('Error deleting old image:', err);
+          }
+        }
+      }
+      
+      // Save new profile picture path (relative to server root)
+      user.profilePicture = `/uploads/profiles/${req.file.filename}`;
+    }
+
+    // Update profile fields (only if provided)
+    if (req.body.ethnicity !== undefined) user.ethnicity = req.body.ethnicity;
+    if (req.body.height !== undefined) user.height = req.body.height;
+    if (req.body.birthPlace !== undefined) user.birthPlace = req.body.birthPlace;
+    if (req.body.currentLocation !== undefined) user.currentLocation = req.body.currentLocation;
+    if (req.body.profession !== undefined) user.profession = req.body.profession;
+    if (req.body.education !== undefined) user.education = req.body.education;
+    if (languages) user.languages = languages;
+    if (req.body.bio !== undefined) user.bio = req.body.bio;
+
+    // Mark profile as completed
     user.profileCompleted = true;
 
     await user.save();
 
+    // Return updated user without password
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+
     res.status(200).json({
       message: 'Profile updated successfully',
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileCompleted: user.profileCompleted
-      }
+      user: updatedUser
     });
 
   } catch (error) {
     console.error('Update profile error:', error);
-    res.status(500).json({ message: 'Server error updating profile' });
+    res.status(500).json({ 
+      message: 'Server error updating profile',
+      error: error.message 
+    });
   }
 };
