@@ -64,8 +64,14 @@ function Login({ onClose, onSwitchToSignUp }) {
       // Close modal
       onClose();
 
-      // Reload to show logged in state
-      window.location.href = '/';
+      // Check if profile is completed
+      if (!response.data.user.profileCompleted) {
+        // Redirect to complete profile
+        window.location.href = '/complete-profile';
+      } else {
+        // Redirect to home (we'll build this next)
+        window.location.href = '/home';
+      }
 
     } catch (error) {
       console.error('Login error:', error);

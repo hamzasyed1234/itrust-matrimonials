@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import LandingPage from './pages/LandingPage';
 import VerifyEmail from './pages/VerifyEmail';
+import CompleteProfile from './pages/CompleteProfile';
 import './App.css';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/complete-profile" element={<CompleteProfile />} />
           </Routes>
         </div>
       </Router>
