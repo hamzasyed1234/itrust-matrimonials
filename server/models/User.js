@@ -76,9 +76,16 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
-  bio: {
+  maritalStatus: {
     type: String,
-    default: ''
+    default: '',
+    enum: ['', 'Never Married', 'Divorced', 'Widowed', 'Other']
+  },
+  
+  customFields: {
+    type: Map,
+    of: String,
+    default: {}
   },
   
   // Match system

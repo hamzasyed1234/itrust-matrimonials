@@ -66,12 +66,8 @@ function Login({ onClose, onSwitchToSignUp }) {
       // Close modal
       onClose();
 
-      // Navigate based on profile completion
-      if (!response.data.user.profileCompleted) {
-        navigate('/complete-profile');
-      } else {
-        navigate('/home');
-      }
+      // Always navigate to home page
+      navigate('/home');
 
     } catch (error) {
       console.error('Login error:', error);

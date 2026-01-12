@@ -29,19 +29,6 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Parse languages from JSON string if it exists
-    let languages = user.languages;
-    if (req.body.languages) {
-      try {
-        const parsedLanguages = JSON.parse(req.body.languages);
-        if (Array.isArray(parsedLanguages) && parsedLanguages.length > 0) {
-          languages = parsedLanguages;
-        }
-      } catch (e) {
-        console.error('Error parsing languages:', e);
-      }
-    }
-
     // Handle profile picture upload
     if (req.file) {
       // Delete old profile picture if it exists
@@ -61,15 +48,51 @@ exports.updateProfile = async (req, res) => {
       user.profilePicture = `/uploads/profiles/${req.file.filename}`;
     }
 
-    // Update profile fields (only if provided)
-    if (req.body.ethnicity !== undefined) user.ethnicity = req.body.ethnicity;
-    if (req.body.height !== undefined) user.height = req.body.height;
-    if (req.body.birthPlace !== undefined) user.birthPlace = req.body.birthPlace;
-    if (req.body.currentLocation !== undefined) user.currentLocation = req.body.currentLocation;
-    if (req.body.profession !== undefined) user.profession = req.body.profession;
-    if (req.body.education !== undefined) user.education = req.body.education;
-    if (languages) user.languages = languages;
-    if (req.body.bio !== undefined) user.bio = req.body.bio;
+    // Update profile fields (only if provided and not empty string 'undefined')
+    if (req.body.ethnicity !== undefined && req.body.ethnicity !== '' && req.body.ethnicity !== 'undefined') {
+      user.ethnicity = req.body.ethnicity;
+    }
+    if (req.body.height !== undefined && req.body.height !== '' && req.body.height !== 'undefined') {
+      user.height = req.body.height;
+    }
+    if (req.body.birthPlace !== undefined && req.body.birthPlace !== '' && req.body.birthPlace !== 'undefined') {
+      user.birthPlace = req.body.birthPlace;
+    }
+    if (req.body.currentLocation !== undefined && req.body.currentLocation !== '' && req.body.currentLocation !== 'undefined') {
+      user.currentLocation = req.body.currentLocation;
+    }
+    if (req.body.profession !== undefined && req.body.profession !== '' && req.body.profession !== 'undefined') {
+      user.profession = req.body.profession;
+    }
+    if (req.body.education !== undefined && req.body.education !== '' && req.body.education !== 'undefined') {
+      user.education = req.body.education;
+    }
+    
+    if (req.body.maritalStatus !== undefined && req.body.maritalStatus !== '' && req.body.maritalStatus !== 'undefined') {
+      user.maritalStatus = req.body.maritalStatus;
+    }
+
+    // Handle languages separately (it's an array)
+    if (req.body.languages) {
+      try {
+        const parsedLanguages = JSON.parse(req.body.languages);
+        if (Array.isArray(parsedLanguages)) {
+          user.languages = parsedLanguages.filter(lang => lang && lang.trim() !== '');
+        }
+      } catch (e) {
+        console.error('Error parsing languages:', e);
+      }
+    }
+
+    // Handle custom fields (optional fields like complexion, etc.)
+    if (req.body.customFields) {
+      try {
+        const parsedCustomFields = JSON.parse(req.body.customFields);
+        user.customFields = parsedCustomFields;
+      } catch (e) {
+        console.error('Error parsing custom fields:', e);
+      }
+    }
 
     // Mark profile as completed
     user.profileCompleted = true;
