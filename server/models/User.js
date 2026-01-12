@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: true,
-    enum: ['male', 'female']
+    enum: ['Male', 'Female', 'male', 'female'] // Added capitalized versions for consistency
   },
   isEmailVerified: {
     type: Boolean,
@@ -97,6 +97,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
     max: 3
+  },
+  pendingMatchRequests: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

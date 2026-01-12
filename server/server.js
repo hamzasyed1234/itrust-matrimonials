@@ -34,6 +34,12 @@ app.use('/api/auth', authRoutes);
 const profileRoutes = require('./routes/profileRoutes');
 app.use('/api/profile', profileRoutes);
 
+const browseRoutes = require('./routes/browse');
+app.use('/api/browse', browseRoutes);
+
+const connectionRoutes = require('./routes/connections');
+app.use('/api/connections', connectionRoutes);
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB Connected'))
