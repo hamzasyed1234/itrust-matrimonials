@@ -36,8 +36,15 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  emailVerificationToken: String,
-  emailVerificationExpires: Date,
+  // Changed from token to code
+  verificationCode: {
+    type: String,
+    default: null
+  },
+  verificationCodeExpires: {
+    type: Date,
+    default: null
+  },
   
   // Phase 2 - Profile
   profileCompleted: {

@@ -17,7 +17,8 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            {/* Updated: No token parameter needed anymore */}
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/browse" element={<BrowsePage />} />
             <Route path="/matches" element={<MatchesPage />} />

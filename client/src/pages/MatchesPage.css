@@ -158,37 +158,88 @@
   box-shadow: 0 8px 20px rgba(230, 99, 134, 0.5);
 }
 
-/* Requests Grid */
+/* Privacy Notice */
+.privacy-notice {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.privacy-notice .info-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.privacy-notice p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Requests Grid - UPDATED TO MATCH BROWSE PAGE */
 .requests-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
 }
 
+/* Request Card - UPDATED TO MATCH BROWSE PAGE USER CARD */
 .request-card {
   background: linear-gradient(135deg, #383838 0%, #2f2f2f 100%);
   border: 2px solid rgba(230, 99, 134, 0.1);
   border-radius: 16px;
-  overflow: hidden;
+  padding: 28px;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .request-card:hover {
   border-color: #E66386;
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(230, 99, 134, 0.3);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(230, 99, 134, 0.4);
 }
 
+.request-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #E66386 0%, #ff7fa0 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.request-card:hover::before {
+  opacity: 1;
+}
+
+/* Card Image - UPDATED TO MATCH BROWSE PAGE AVATAR */
 .card-image {
-  width: 100%;
-  height: 250px;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
   overflow: hidden;
+  border: 4px solid #E66386;
+  box-shadow: 0 8px 20px rgba(230, 99, 134, 0.4);
+  transition: all 0.3s ease;
   background: linear-gradient(135deg, #383838 0%, #2f2f2f 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+}
+
+.request-card:hover .card-image {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(230, 99, 134, 0.6);
 }
 
 .card-image img {
@@ -197,74 +248,60 @@
   object-fit: cover;
 }
 
-.placeholder-avatar {
-  font-size: 80px;
+.card-image .placeholder-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
   color: #666666;
 }
 
+/* Card Info - UPDATED TO MATCH BROWSE PAGE */
 .card-info {
-  padding: 20px;
+  text-align: center;
 }
 
 .card-info h3 {
   color: white;
-  font-size: 20px;
-  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
 }
 
-.card-age {
+.card-quick-info {
   color: #999999;
   font-size: 14px;
-  margin-bottom: 8px;
+  line-height: 1.8;
+  background: rgba(230, 99, 134, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
 
+.card-age,
 .card-location,
 .card-profession {
-  color: #cccccc;
-  font-size: 13px;
+  color: #999999;
+  font-size: 14px;
   margin-bottom: 6px;
 }
 
-.card-actions {
-  display: flex;
-  gap: 8px;
-  padding: 0 20px 20px;
-}
-
-.accept-btn-small,
-.decline-btn-small {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.accept-btn-small {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+/* Phone Number in Cards */
+.card-phone {
+  margin: 12px 0;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
   color: white;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
 }
 
-.accept-btn-small:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
-}
-
-.decline-btn-small {
-  background: rgba(244, 67, 54, 0.2);
-  color: #f44336;
-  border: 2px solid #f44336;
-}
-
-.decline-btn-small:hover {
-  background: rgba(244, 67, 54, 0.3);
-  transform: translateY(-2px);
-}
-
-/* Status Badge */
+/* Status Badges */
 .status-badge {
   display: inline-block;
   padding: 6px 12px;
@@ -302,6 +339,84 @@
   background: linear-gradient(135deg, rgba(230, 99, 134, 0.2) 0%, rgba(255, 127, 160, 0.2) 100%);
   color: #E66386;
   border: 1px solid #E66386;
+}
+
+/* Card Actions */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.accept-btn-small,
+.decline-btn-small {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.accept-btn-small {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+}
+
+.accept-btn-small:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.decline-btn-small {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  border: 2px solid #f44336;
+}
+
+.decline-btn-small:hover {
+  background: rgba(244, 67, 54, 0.3);
+  transform: translateY(-2px);
+}
+
+/* WhatsApp Section in Card */
+.whatsapp-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(230, 99, 134, 0.2);
+}
+
+.whatsapp-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+.whatsapp-btn:active {
+  transform: translateY(0);
+}
+
+.whatsapp-icon {
+  font-size: 20px;
 }
 
 /* Profile Modal */
@@ -452,6 +567,91 @@
   font-size: 15px;
 }
 
+/* Phone Item in Modal */
+.phone-item {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.phone-item .label {
+  color: white;
+  font-weight: 600;
+}
+
+.phone-value {
+  color: white !important;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* WhatsApp Section in Modal */
+.modal-whatsapp-section {
+  margin-top: 25px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 15px;
+  text-align: center;
+}
+
+.whatsapp-modal-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+  margin-bottom: 12px;
+}
+
+.whatsapp-modal-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(37, 211, 102, 0.5);
+}
+
+.whatsapp-modal-btn:active {
+  transform: translateY(0);
+}
+
+.whatsapp-notice {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
+/* No Phone Notice */
+.no-phone-notice {
+  margin-top: 20px;
+  padding: 15px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #856404;
+}
+
+.no-phone-notice .info-icon {
+  font-size: 20px;
+}
+
+.no-phone-notice p {
+  margin: 0;
+  font-size: 14px;
+}
+
 .modal-actions {
   display: flex;
   gap: 12px;
@@ -539,7 +739,8 @@
   }
 
   .card-image {
-    height: 200px;
+    width: 120px;
+    height: 120px;
   }
 
   .profile-modal {
@@ -590,170 +791,7 @@
   .empty-state p {
     font-size: 14px;
   }
-}/* Add these styles to your existing MatchesPage.css */
 
-/* Privacy Notice */
-.privacy-notice {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 15px 20px;
-  border-radius: 12px;
-  margin-bottom: 25px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.privacy-notice .info-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.privacy-notice p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-/* Phone Number in Cards */
-.card-phone {
-  margin: 8px 0 0 0;
-  padding: 8px 12px;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-  color: white;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  display: inline-block;
-}
-
-/* WhatsApp Button in Card */
-.whatsapp-section {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.whatsapp-btn {
-  width: 100%;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-}
-
-.whatsapp-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
-}
-
-.whatsapp-btn:active {
-  transform: translateY(0);
-}
-
-.whatsapp-icon {
-  font-size: 20px;
-}
-
-/* Phone Item in Modal */
-.phone-item {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  padding: 15px;
-  border-radius: 12px;
-  margin-top: 10px;
-}
-
-.phone-item .label {
-  color: white;
-  font-weight: 600;
-}
-
-.phone-value {
-  color: white !important;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-/* WhatsApp Section in Modal */
-.modal-whatsapp-section {
-  margin-top: 25px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 15px;
-  text-align: center;
-}
-
-.whatsapp-modal-btn {
-  width: 100%;
-  padding: 16px 24px;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
-  margin-bottom: 12px;
-}
-
-.whatsapp-modal-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 25px rgba(37, 211, 102, 0.5);
-}
-
-.whatsapp-modal-btn:active {
-  transform: translateY(0);
-}
-
-.whatsapp-notice {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
-  font-style: italic;
-}
-
-/* No Phone Notice */
-.no-phone-notice {
-  margin-top: 20px;
-  padding: 15px;
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #856404;
-}
-
-.no-phone-notice .info-icon {
-  font-size: 20px;
-}
-
-.no-phone-notice p {
-  margin: 0;
-  font-size: 14px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
   .privacy-notice {
     flex-direction: column;
     text-align: center;

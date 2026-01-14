@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import './SignUp.css';
 
 function SignUp({ onClose, onSwitchToLogin }) {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -115,11 +117,16 @@ function SignUp({ onClose, onSwitchToLogin }) {
         password: formData.password
       });
 
-      // Show success message
-      alert(response.data.message || 'Registration successful! Please check your email to verify your account.');
+      console.log('Registration successful:', response.data);
       
       // Close the modal
       onClose();
+      
+      // Redirect to verification page with email
+      navigate('/verify-email', { 
+        state: { email: formData.email } 
+      });
+      
     } catch (error) {
       console.error('Registration error:', error);
       

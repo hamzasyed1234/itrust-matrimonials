@@ -1,60 +1,131 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import './VerifyEmail.css';
 
 function VerifyEmail() {
-  const { token } = useParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState('verifying');
+  const location = useLocation();
+  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const hasVerified = useRef(false);
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
-    const verifyEmail = async () => {
-      // Prevent double execution
-      if (hasVerified.current) {
-        console.log('Already verified, skipping...');
-        return;
+    // Get email from location state (passed from signup)
+    if (location.state?.email) {
+      setEmail(location.state.email);
+    } else {
+      // If no email in state, redirect to signup
+      navigate('/signup');
+    }
+  }, [location, navigate]);
+
+  const handleCodeChange = (index, value) => {
+    // Only allow numbers
+    if (value && !/^\d$/.test(value)) return;
+
+    const newCode = [...code];
+    newCode[index] = value;
+    setCode(newCode);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      document.getElementById(`code-${index + 1}`).focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    // Handle backspace
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      document.getElementById(`code-${index - 1}`).focus();
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').trim();
+    
+    // Check if pasted data is 6 digits
+    if (/^\d{6}$/.test(pastedData)) {
+      const newCode = pastedData.split('');
+      setCode(newCode);
+      // Focus last input
+      document.getElementById('code-5').focus();
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    const verificationCode = code.join('');
+    
+    if (verificationCode.length !== 6) {
+      setMessage('Please enter all 6 digits');
+      setMessageType('error');
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage('');
+
+    try {
+      const response = await api.post('/auth/verify-email', {
+        email: email,
+        code: verificationCode
+      });
+
+      console.log('Verification successful:', response.data);
+      
+      setMessage('Email verified successfully!');
+      setMessageType('success');
+
+      // Store token if returned
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
       }
 
-      if (!token) {
-        console.log('No token found in URL');
-        setStatus('error');
-        setMessage('No verification token provided.');
-        return;
-      }
+      // Redirect to home/dashboard after 2 seconds
+      setTimeout(() => {
+        navigate('/home');
+      }, 2000);
 
-      hasVerified.current = true;
+    } catch (error) {
+      console.error('Verification error:', error);
+      setMessage(
+        error.response?.data?.message || 
+        'Verification failed. Please check your code and try again.'
+      );
+      setMessageType('error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      try {
-        console.log('Token received from URL:', token);
-        console.log('Sending verification request to:', `/auth/verify-email/${token}`);
-        const response = await api.get(`/auth/verify-email/${token}`);
-        console.log('Verification successful:', response.data);
-        
-        setStatus('success');
-        setMessage(response.data.message || 'Email verified successfully!');
-        
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          navigate('/');
-        }, 3000);
-      } catch (error) {
-        console.error('Verification error:', error);
-        console.error('Error details:', error.response?.data);
-        
-        setStatus('error');
-        setMessage(
-          error.response?.data?.message || 
-          'Verification failed. The link may be invalid or expired.'
-        );
-      }
-    };
+  const handleResendCode = async () => {
+    setIsResending(true);
+    setMessage('');
 
-    verifyEmail();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    try {
+      await api.post('/auth/resend-code', { email });
+      setMessage('New verification code sent to your email!');
+      setMessageType('success');
+      setCode(['', '', '', '', '', '']);
+      document.getElementById('code-0').focus();
+    } catch (error) {
+      console.error('Resend error:', error);
+      setMessage(
+        error.response?.data?.message || 
+        'Failed to resend code. Please try again.'
+      );
+      setMessageType('error');
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <div className="verify-email-page">
@@ -63,36 +134,71 @@ function VerifyEmail() {
           <span className="heart-icon">❤️</span> iTrust Matrimonials
         </div>
 
-        {status === 'verifying' && (
-          <div className="verify-content">
-            <div className="spinner"></div>
-            <h2>Verifying Your Email...</h2>
-            <p>Please wait while we verify your account.</p>
-          </div>
-        )}
+        <div className="verify-content">
+          <h2>Verify Your Email</h2>
+          <p className="subtitle">
+            We've sent a 6-digit verification code to<br />
+            <strong>{email}</strong>
+          </p>
 
-        {status === 'success' && (
-          <div className="verify-content success">
-            <div className="success-icon">✓</div>
-            <h2>Email Verified Successfully!</h2>
-            <p>{message}</p>
-            <p className="redirect-text">Redirecting you to login...</p>
-          </div>
-        )}
+          <form onSubmit={handleSubmit} className="verification-form">
+            <div className="code-inputs" onPaste={handlePaste}>
+              {code.map((digit, index) => (
+                <input
+                  key={index}
+                  id={`code-${index}`}
+                  type="text"
+                  maxLength="1"
+                  value={digit}
+                  onChange={(e) => handleCodeChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  className="code-input"
+                  autoFocus={index === 0}
+                  disabled={isLoading}
+                />
+              ))}
+            </div>
 
-        {status === 'error' && (
-          <div className="verify-content error">
-            <div className="error-icon">✕</div>
-            <h2>Verification Failed</h2>
-            <p>{message}</p>
+            {message && (
+              <div className={`message ${messageType}`}>
+                {messageType === 'success' ? '✓' : '✕'} {message}
+              </div>
+            )}
+
             <button 
-              className="home-btn"
-              onClick={() => navigate('/')}
+              type="submit" 
+              className="verify-btn"
+              disabled={isLoading || code.join('').length !== 6}
             >
-              Go to Home
+              {isLoading ? (
+                <>
+                  <span className="spinner-small"></span>
+                  Verifying...
+                </>
+              ) : (
+                'Verify Email'
+              )}
+            </button>
+          </form>
+
+          <div className="resend-section">
+            <p>Didn't receive the code?</p>
+            <button 
+              onClick={handleResendCode}
+              className="resend-btn"
+              disabled={isResending}
+            >
+              {isResending ? 'Sending...' : 'Resend Code'}
             </button>
           </div>
-        )}
+
+          <button 
+            className="back-btn"
+            onClick={() => navigate('/signup')}
+          >
+            ← Back to Signup
+          </button>
+        </div>
       </div>
     </div>
   );
