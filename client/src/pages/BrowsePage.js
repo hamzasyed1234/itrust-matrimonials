@@ -258,11 +258,7 @@ function BrowsePage() {
           <p className="verse-reference">— Surah Al-A'raf (7:189)</p>
         </div>
 
-        {/* Header */}
-        <div className="browse-header">
-          <h1>Find Your Naseeb 💕</h1>
-          <p className="browse-subtitle">Discover profiles that match your preferences</p>
-        </div>
+       
 
         {/* Browse Layout */}
         <div className="browse-layout">

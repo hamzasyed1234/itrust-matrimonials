@@ -738,7 +738,45 @@ function HomePage() {
                   )}
                 </div>
 
-                
+
+
+
+{/* Phone Number - REQUIRED */}
+<div className="info-row editable">
+  {editingField === 'phoneNumber' ? (
+    <>
+      <span className="info-label">📱 Phone Number *</span>
+      <div className="edit-controls">
+        <input
+          type="tel"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          placeholder="+1 (234) 567-8900"
+          autoFocus
+          style={{ fontFamily: 'monospace', letterSpacing: '0.5px' }}
+        />
+        <button className="save-btn" onClick={saveField} disabled={saving}>
+          {saving ? '...' : '✓'}
+        </button>
+        <button className="cancel-btn" onClick={cancelEditing}>✕</button>
+      </div>
+    </>
+  ) : (
+    <>
+      <button className="edit-icon" onClick={() => startEditing('phoneNumber', user.phoneNumber)}>
+        ✏️
+      </button>
+      <span className="info-label">📱 Phone Number *</span>
+      <span className="info-value">
+        {user.phoneNumber || 'Required'}
+      </span>
+    </>
+  )}
+</div>
+<p className="privacy-hint">Your phone number will only be visible to people you match with</p>
+
+
+
                 {/* Custom Fields - OPTIONAL */}
                 {Object.keys(customFields).length > 0 && (
                   <div className="custom-fields-section">

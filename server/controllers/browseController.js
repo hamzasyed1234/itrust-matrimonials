@@ -1,6 +1,5 @@
 const User = require('../models/User');
-// ConnectionRequest model will be needed later for sending connection requests
-// const ConnectionRequest = require('../models/ConnectionRequest');
+const Connection = require('../models/Connection');
 
 // Get all profiles (opposite gender only)
 exports.getProfiles = async (req, res) => {
@@ -22,11 +21,10 @@ exports.getProfiles = async (req, res) => {
     // RELAXED REQUIREMENTS - Only require basic fields
     const profiles = await User.find({
       _id: { $ne: currentUser._id },
-      gender: { $in: [oppositeGender, oppositeGender.toLowerCase()] }, // Match both cases
-      // Only require email and gender - everything else is optional
+      gender: { $in: [oppositeGender, oppositeGender.toLowerCase()] },
       email: { $exists: true, $ne: null }
     })
-    .select('-password -email') // Hide sensitive fields
+    .select('-password -email -phoneNumber') // Hide sensitive fields including phone
     .sort({ createdAt: -1 });
 
     console.log('✅ Found profiles:', profiles.length);
@@ -47,7 +45,7 @@ exports.getProfiles = async (req, res) => {
   }
 };
 
-// Get single profile by ID
+// Get single profile by ID (WITHOUT connection check - for browse page)
 exports.getProfileById = async (req, res) => {
   try {
     const { profileId } = req.params;
@@ -61,7 +59,7 @@ exports.getProfileById = async (req, res) => {
     }
 
     const profile = await User.findById(profileId)
-      .select('-password -email'); // Exclude sensitive info
+      .select('-password -email -phoneNumber'); // Hide phone number in browse
 
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
@@ -93,6 +91,59 @@ exports.getProfileById = async (req, res) => {
   }
 };
 
+// Get single profile WITH connection check (for matches page) - NEW FUNCTION
+exports.getProfileWithConnectionStatus = async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+    const { userId } = req.params;
+
+    console.log('🔍 Fetching profile with connection status');
+    console.log('🔍 Current User ID:', currentUserId);
+    console.log('🔍 Target User ID:', userId);
+
+    // Find the user
+    const user = await User.findById(userId).select('-password -email');
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Check if they have an accepted connection
+    const connection = await Connection.findOne({
+      $or: [
+        { sender: currentUserId, receiver: userId, status: 'accepted' },
+        { sender: userId, receiver: currentUserId, status: 'accepted' }
+      ]
+    });
+
+    const userObj = user.toObject();
+
+    // Only include phone number if they have an accepted match
+    if (!connection) {
+      delete userObj.phoneNumber;
+      console.log('❌ No accepted connection - phone number hidden');
+    } else {
+      console.log('✅ Accepted connection found - phone number visible');
+    }
+
+    res.json({
+      success: true,
+      profile: userObj,
+      isMatched: !!connection
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching profile with connection status:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error while fetching profile' 
+    });
+  }
+};
+
 // Apply filters to profiles
 exports.getFilteredProfiles = async (req, res) => {
   try {
@@ -108,7 +159,7 @@ exports.getFilteredProfiles = async (req, res) => {
     // Build filter query
     let query = {
       _id: { $ne: currentUser._id },
-      gender: { $in: [oppositeGender, oppositeGender.toLowerCase()] }, // Match both cases
+      gender: { $in: [oppositeGender, oppositeGender.toLowerCase()] },
       email: { $exists: true, $ne: null }
     };
 
@@ -161,12 +212,11 @@ exports.getFilteredProfiles = async (req, res) => {
 
     // Height filter (if height exists)
     if (minHeight || maxHeight) {
-      // Convert height to inches for comparison
       query.height = { $exists: true };
     }
 
     const profiles = await User.find(query)
-      .select('-password -email')
+      .select('-password -email -phoneNumber') // Hide phone in filtered results
       .sort({ createdAt: -1 });
 
     console.log('✅ Filtered profiles found:', profiles.length);
@@ -182,56 +232,6 @@ exports.getFilteredProfiles = async (req, res) => {
     res.status(500).json({ 
       success: false,
       message: 'Server error while filtering profiles' 
-    });
-  }
-};
-
-// Send connection request
-exports.sendConnectionRequest = async (req, res) => {
-  try {
-    const { recipientId } = req.body;
-    const senderId = req.user.id;
-
-    // Check if request already exists
-    const existingRequest = await ConnectionRequest.findOne({
-      sender: senderId,
-      recipient: recipientId,
-      status: 'pending'
-    });
-
-    if (existingRequest) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Connection request already sent' 
-      });
-    }
-
-    // Create new connection request
-    const connectionRequest = new ConnectionRequest({
-      sender: senderId,
-      recipient: recipientId,
-      status: 'pending'
-    });
-
-    await connectionRequest.save();
-
-    // Update recipient's pending count
-    await User.findByIdAndUpdate(recipientId, {
-      $inc: { pendingMatchRequests: 1 }
-    });
-
-    console.log('✅ Connection request sent from', senderId, 'to', recipientId);
-
-    res.json({
-      success: true,
-      message: 'Connection request sent successfully'
-    });
-
-  } catch (error) {
-    console.error('❌ Error sending connection request:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Server error while sending connection request' 
     });
   }
 };

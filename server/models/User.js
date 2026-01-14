@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: true,
-    enum: ['Male', 'Female', 'male', 'female'] // Added capitalized versions for consistency
+    enum: ['Male', 'Female', 'male', 'female']
   },
   isEmailVerified: {
     type: Boolean,
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
   emailVerificationToken: String,
   emailVerificationExpires: Date,
   
-  // Phase 2 - Profile (optional, can be completed later)
+  // Phase 2 - Profile
   profileCompleted: {
     type: Boolean,
     default: false
@@ -80,6 +80,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
     enum: ['', 'Never Married', 'Divorced', 'Widowed', 'Other']
+  },
+  
+  // Phone Number for WhatsApp connection
+  phoneNumber: {
+    type: String,
+    default: '',
+    trim: true
   },
   
   customFields: {

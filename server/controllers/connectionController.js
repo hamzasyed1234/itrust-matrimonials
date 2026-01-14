@@ -5,7 +5,6 @@ const Connection = require('../models/Connection');
 exports.sendConnectionRequest = async (req, res) => {
   try {
     const senderId = req.user.id;
-    // Accept both recipientId and receiverId for flexibility
     const { receiverId, recipientId } = req.body;
     const targetId = receiverId || recipientId;
 
@@ -120,7 +119,7 @@ exports.getPendingRequests = async (req, res) => {
       receiver: userId,
       status: 'pending'
     })
-    .populate('sender', '-password -email')
+    .populate('sender', '-password -email -phoneNumber') // Hide phone until accepted
     .sort({ createdAt: -1 });
 
     res.json({
@@ -246,7 +245,7 @@ exports.declineConnectionRequest = async (req, res) => {
   }
 };
 
-// Get all connections (accepted matches)
+// Get all connections (accepted matches) - WITH PHONE NUMBERS
 exports.getMyConnections = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -258,8 +257,8 @@ exports.getMyConnections = async (req, res) => {
       ],
       status: 'accepted'
     })
-    .populate('sender', '-password -email')
-    .populate('receiver', '-password -email')
+    .populate('sender', '-password -email') // Include phoneNumber for accepted matches
+    .populate('receiver', '-password -email') // Include phoneNumber for accepted matches
     .sort({ updatedAt: -1 });
 
     const formattedConnections = connections.map(conn => {
@@ -297,7 +296,7 @@ exports.getSentRequests = async (req, res) => {
     const sentRequests = await Connection.find({
       sender: userId
     })
-    .populate('receiver', '-password -email')
+    .populate('receiver', '-password -email -phoneNumber') // Hide phone until accepted
     .sort({ createdAt: -1 });
 
     res.json({

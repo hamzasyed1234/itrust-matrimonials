@@ -72,6 +72,11 @@ exports.updateProfile = async (req, res) => {
       user.maritalStatus = req.body.maritalStatus;
     }
 
+    // Update phone number
+    if (req.body.phoneNumber !== undefined && req.body.phoneNumber !== 'undefined') {
+      user.phoneNumber = req.body.phoneNumber.trim();
+    }
+
     // Handle languages separately (it's an array)
     if (req.body.languages) {
       try {

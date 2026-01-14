@@ -590,4 +590,178 @@
   .empty-state p {
     font-size: 14px;
   }
+}/* Add these styles to your existing MatchesPage.css */
+
+/* Privacy Notice */
+.privacy-notice {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.privacy-notice .info-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.privacy-notice p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Phone Number in Cards */
+.card-phone {
+  margin: 8px 0 0 0;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* WhatsApp Button in Card */
+.whatsapp-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.whatsapp-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+.whatsapp-btn:active {
+  transform: translateY(0);
+}
+
+.whatsapp-icon {
+  font-size: 20px;
+}
+
+/* Phone Item in Modal */
+.phone-item {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.phone-item .label {
+  color: white;
+  font-weight: 600;
+}
+
+.phone-value {
+  color: white !important;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* WhatsApp Section in Modal */
+.modal-whatsapp-section {
+  margin-top: 25px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 15px;
+  text-align: center;
+}
+
+.whatsapp-modal-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+  margin-bottom: 12px;
+}
+
+.whatsapp-modal-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(37, 211, 102, 0.5);
+}
+
+.whatsapp-modal-btn:active {
+  transform: translateY(0);
+}
+
+.whatsapp-notice {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
+/* No Phone Notice */
+.no-phone-notice {
+  margin-top: 20px;
+  padding: 15px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #856404;
+}
+
+.no-phone-notice .info-icon {
+  font-size: 20px;
+}
+
+.no-phone-notice p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .privacy-notice {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .whatsapp-btn,
+  .whatsapp-modal-btn {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
 }

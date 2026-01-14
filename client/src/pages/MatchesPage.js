@@ -16,6 +16,7 @@ function MatchesPage() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isMatched, setIsMatched] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -75,12 +76,28 @@ function MatchesPage() {
     return age;
   };
 
+  // Format phone number for WhatsApp (remove spaces, dashes, etc.)
+  const formatPhoneForWhatsApp = (phone) => {
+    if (!phone) return '';
+    // Remove all non-numeric characters except +
+    return phone.replace(/[^\d+]/g, '');
+  };
+
+  // Open WhatsApp chat
+  const openWhatsApp = (phoneNumber) => {
+    const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
+    const message = encodeURIComponent("Assalamu Alaikum! I'm reaching out from iTrust Matrimonials.");
+    window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
+  };
+
   // View profile
   const handleViewProfile = async (userId, requestId = null) => {
     try {
-      const response = await api.get(`/browse/profile/${userId}`);
+      // Use the connection-aware endpoint for matches page
+      const response = await api.get(`/browse/profile-with-status/${userId}`);
       if (response.data.success) {
         setSelectedProfile({ ...response.data.profile, requestId });
+        setIsMatched(response.data.isMatched || false);
         setShowProfileModal(true);
       }
     } catch (error) {
@@ -108,7 +125,7 @@ function MatchesPage() {
 
         setShowProfileModal(false);
         setSelectedProfile(null);
-        alert('Connection accepted! 🎉');
+        alert('Connection accepted! 🎉 You can now see their phone number and connect on WhatsApp.');
       }
     } catch (error) {
       console.error('Error accepting request:', error);
@@ -323,34 +340,54 @@ function MatchesPage() {
                       </button>
                     </div>
                   ) : (
-                    <div className="requests-grid">
-                      {acceptedMatches.map((match) => (
-                        <div
-                          key={match.connectionId}
-                          className="request-card match-card"
-                          onClick={() => handleViewProfile(match.user._id)}
-                        >
-                          <div className="card-image">
-                            {match.user.profilePicture ? (
-                              <img
-                                src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${match.user.profilePicture}`}
-                                alt={match.user.firstName}
-                              />
-                            ) : (
-                              <div className="placeholder-avatar">👤</div>
+                    <>
+                      <div className="privacy-notice">
+                        <span className="info-icon">🔒</span>
+                        <p>Phone numbers are only visible for accepted matches. Connect on WhatsApp to continue your conversation!</p>
+                      </div>
+                      <div className="requests-grid">
+                        {acceptedMatches.map((match) => (
+                          <div
+                            key={match.connectionId}
+                            className="request-card match-card"
+                            onClick={() => handleViewProfile(match.user._id)}
+                          >
+                            <div className="card-image">
+                              {match.user.profilePicture ? (
+                                <img
+                                  src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${match.user.profilePicture}`}
+                                  alt={match.user.firstName}
+                                />
+                              ) : (
+                                <div className="placeholder-avatar">👤</div>
+                              )}
+                            </div>
+                            <div className="card-info">
+                              <h3>{match.user.firstName} {match.user.lastName}</h3>
+                              <p className="card-age">{calculateAge(match.user.dateOfBirth)} years old</p>
+                              {match.user.currentLocation && (
+                                <p className="card-location">📍 {match.user.currentLocation}</p>
+                              )}
+                              {match.user.phoneNumber && (
+                                <p className="card-phone">📱 {match.user.phoneNumber}</p>
+                              )}
+                              <div className="match-badge">💕 Matched</div>
+                            </div>
+                            {match.user.phoneNumber && (
+                              <div className="whatsapp-section" onClick={(e) => e.stopPropagation()}>
+                                <button 
+                                  className="whatsapp-btn"
+                                  onClick={() => openWhatsApp(match.user.phoneNumber)}
+                                >
+                                  <span className="whatsapp-icon">💬</span>
+                                  Chat on WhatsApp
+                                </button>
+                              </div>
                             )}
                           </div>
-                          <div className="card-info">
-                            <h3>{match.user.firstName} {match.user.lastName}</h3>
-                            <p className="card-age">{calculateAge(match.user.dateOfBirth)} years old</p>
-                            {match.user.currentLocation && (
-                              <p className="card-location">📍 {match.user.currentLocation}</p>
-                            )}
-                            <div className="match-badge">💕 Matched</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -424,7 +461,39 @@ function MatchesPage() {
                     <span className="value">{selectedProfile.languages.join(', ')}</span>
                   </div>
                 )}
+                
+                {/* Show phone number only for matched users */}
+                {isMatched && selectedProfile.phoneNumber && (
+                  <div className="info-item full-width phone-item">
+                    <span className="label">📱 Phone Number</span>
+                    <span className="value phone-value">{selectedProfile.phoneNumber}</span>
+                  </div>
+                )}
               </div>
+
+              {/* WhatsApp button for matched users */}
+              {isMatched && selectedProfile.phoneNumber && (
+                <div className="modal-whatsapp-section">
+                  <button 
+                    className="whatsapp-modal-btn"
+                    onClick={() => openWhatsApp(selectedProfile.phoneNumber)}
+                  >
+                    <span className="whatsapp-icon">💬</span>
+                    Continue on WhatsApp
+                  </button>
+                  <p className="whatsapp-notice">
+                    Click to start a conversation on WhatsApp
+                  </p>
+                </div>
+              )}
+
+              {/* Show notice if matched but no phone number */}
+              {isMatched && !selectedProfile.phoneNumber && (
+                <div className="no-phone-notice">
+                  <span className="info-icon">ℹ️</span>
+                  <p>This user hasn't added their phone number yet</p>
+                </div>
+              )}
             </div>
 
             {/* Show accept/decline buttons only if viewing from pending tab */}
