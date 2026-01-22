@@ -12,7 +12,6 @@ function VerifyEmail() {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [isResending, setIsResending] = useState(false);
-  const [showSpamHelp, setShowSpamHelp] = useState(false);
 
   useEffect(() => {
     if (location.state?.email) {
@@ -135,33 +134,9 @@ function VerifyEmail() {
 
           {/* Spam Folder Help Box */}
           <div className="spam-help-box">
-            <div className="spam-help-header">
-              <span className="email-icon">📧</span>
-              <strong>Can't find the email?</strong>
-            </div>
             <div className="spam-help-content">
-              <p>Check your <strong>Spam/Junk</strong> folder</p>
-              <button 
-                className="spam-instructions-toggle"
-                onClick={() => setShowSpamHelp(!showSpamHelp)}
-              >
-                {showSpamHelp ? '▲ Hide Instructions' : '▼ Show Instructions'}
-              </button>
-              
-              {showSpamHelp && (
-                <div className="spam-instructions">
-                  <h4>If you find it in Spam:</h4>
-                  <ol>
-                    <li>Open the email from <strong>iTrust Matrimonials</strong></li>
-                    <li>Click <strong>"Not Spam"</strong> or <strong>"Report Not Spam"</strong></li>
-                    <li>Add <strong>hamzasy416@gmail.com</strong> to your contacts</li>
-                    <li>Future emails will arrive in your inbox ✓</li>
-                  </ol>
-                  <p className="spam-tip">
-                    💡 <strong>Tip:</strong> Adding us to contacts ensures you never miss important updates!
-                  </p>
-                </div>
-              )}
+              <span className="email-icon">📧</span>
+              Can't find the email? Check your Spam/Junk folder and report not spam
             </div>
           </div>
 

@@ -62,95 +62,21 @@
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 24px;
-  text-align: left;
+  text-align: center;
 }
 
-.spam-help-header {
+.spam-help-content {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   color: #E66386;
   font-size: 14px;
-  margin-bottom: 6px;
   font-weight: 600;
 }
 
 .email-icon {
   font-size: 18px;
-}
-
-.spam-help-content {
-  color: #666666;
-}
-
-.spam-help-content p {
-  margin: 4px 0;
-  font-size: 13px;
-}
-
-.spam-help-content strong {
-  color: #E66386;
-  font-weight: 700;
-}
-
-.spam-instructions-toggle {
-  background: none;
-  border: none;
-  color: #E66386;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 0;
-  margin-top: 6px;
-  transition: all 0.2s ease;
-}
-
-.spam-instructions-toggle:hover {
-  color: #d4567a;
-}
-
-.spam-instructions {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #FFD0DC;
-  animation: slideDown 0.3s ease;
-}
-
-.spam-instructions h4 {
-  color: #E66386;
-  font-size: 13px;
-  margin: 0 0 10px 0;
-  font-weight: 700;
-}
-
-.spam-instructions ol {
-  margin: 0 0 10px 0;
-  padding-left: 18px;
-  color: #666666;
-}
-
-.spam-instructions li {
-  margin-bottom: 6px;
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.spam-instructions li strong {
-  color: #E66386;
-}
-
-.spam-tip {
-  background: #FFFFFF;
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #666666;
-  margin: 10px 0 0 0;
-  border-left: 3px solid #E66386;
-}
-
-.spam-tip strong {
-  color: #E66386;
 }
 
 /* Code Inputs */
