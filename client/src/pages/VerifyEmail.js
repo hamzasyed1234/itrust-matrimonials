@@ -10,35 +10,31 @@ function VerifyEmail() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [messageType, setMessageType] = useState('');
   const [isResending, setIsResending] = useState(false);
+  const [showSpamHelp, setShowSpamHelp] = useState(false);
 
   useEffect(() => {
-    // Get email from location state (passed from signup)
     if (location.state?.email) {
       setEmail(location.state.email);
     } else {
-      // If no email in state, redirect to signup
       navigate('/signup');
     }
   }, [location, navigate]);
 
   const handleCodeChange = (index, value) => {
-    // Only allow numbers
     if (value && !/^\d$/.test(value)) return;
 
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
 
-    // Auto-focus next input
     if (value && index < 5) {
       document.getElementById(`code-${index + 1}`).focus();
     }
   };
 
   const handleKeyDown = (index, e) => {
-    // Handle backspace
     if (e.key === 'Backspace' && !code[index] && index > 0) {
       document.getElementById(`code-${index - 1}`).focus();
     }
@@ -48,11 +44,9 @@ function VerifyEmail() {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').trim();
     
-    // Check if pasted data is 6 digits
     if (/^\d{6}$/.test(pastedData)) {
       const newCode = pastedData.split('');
       setCode(newCode);
-      // Focus last input
       document.getElementById('code-5').focus();
     }
   };
@@ -82,13 +76,11 @@ function VerifyEmail() {
       setMessage('Email verified successfully!');
       setMessageType('success');
 
-      // Store token if returned
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
 
-      // Redirect to home/dashboard after 2 seconds
       setTimeout(() => {
         navigate('/home');
       }, 2000);
@@ -141,6 +133,38 @@ function VerifyEmail() {
             <strong>{email}</strong>
           </p>
 
+          {/* Spam Folder Help Box */}
+          <div className="spam-help-box">
+            <div className="spam-help-header">
+              <span className="email-icon">📧</span>
+              <strong>Can't find the email?</strong>
+            </div>
+            <div className="spam-help-content">
+              <p>Check your <strong>Spam/Junk</strong> folder</p>
+              <button 
+                className="spam-instructions-toggle"
+                onClick={() => setShowSpamHelp(!showSpamHelp)}
+              >
+                {showSpamHelp ? '▲ Hide Instructions' : '▼ Show Instructions'}
+              </button>
+              
+              {showSpamHelp && (
+                <div className="spam-instructions">
+                  <h4>If you find it in Spam:</h4>
+                  <ol>
+                    <li>Open the email from <strong>iTrust Matrimonials</strong></li>
+                    <li>Click <strong>"Not Spam"</strong> or <strong>"Report Not Spam"</strong></li>
+                    <li>Add <strong>hamzasy416@gmail.com</strong> to your contacts</li>
+                    <li>Future emails will arrive in your inbox ✓</li>
+                  </ol>
+                  <p className="spam-tip">
+                    💡 <strong>Tip:</strong> Adding us to contacts ensures you never miss important updates!
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="verification-form">
             <div className="code-inputs" onPaste={handlePaste}>
               {code.map((digit, index) => (
@@ -182,8 +206,7 @@ function VerifyEmail() {
           </form>
 
           <div className="resend-section">
-            <p>Didn't receive the code?</p>
-            <p className="spam-notice">📧 Check your spam/junk folder</p>
+            <p>Still didn't receive the code?</p>
             <button 
               onClick={handleResendCode}
               className="resend-btn"

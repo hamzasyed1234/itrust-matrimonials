@@ -46,13 +46,111 @@
 .subtitle {
   color: #666666;
   font-size: 15px;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   line-height: 1.6;
 }
 
 .subtitle strong {
   color: #E66386;
   font-weight: 600;
+}
+
+/* Spam Help Box */
+.spam-help-box {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+  border: 2px solid #FFD54F;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.spam-help-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #F57C00;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.email-icon {
+  font-size: 20px;
+}
+
+.spam-help-content {
+  color: #5D4037;
+}
+
+.spam-help-content p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.spam-help-content strong {
+  color: #E65100;
+  font-weight: 700;
+}
+
+.spam-instructions-toggle {
+  background: none;
+  border: none;
+  color: #F57C00;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 4px;
+  transition: color 0.3s ease;
+}
+
+.spam-instructions-toggle:hover {
+  color: #E65100;
+  text-decoration: underline;
+}
+
+.spam-instructions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #FFD54F;
+  animation: slideDown 0.3s ease;
+}
+
+.spam-instructions h4 {
+  color: #E65100;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+  font-weight: 700;
+}
+
+.spam-instructions ol {
+  margin: 0 0 12px 0;
+  padding-left: 20px;
+  color: #5D4037;
+}
+
+.spam-instructions li {
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.spam-instructions li strong {
+  color: #D84315;
+}
+
+.spam-tip {
+  background: #FFFFFF;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #5D4037;
+  margin: 12px 0 0 0;
+  border-left: 3px solid #FF9800;
+}
+
+.spam-tip strong {
+  color: #E65100;
 }
 
 /* Code Inputs */
@@ -261,6 +359,27 @@
     font-size: 14px;
   }
 
+  .spam-help-box {
+    padding: 14px;
+  }
+
+  .spam-help-header {
+    font-size: 14px;
+  }
+
+  .spam-instructions h4 {
+    font-size: 13px;
+  }
+
+  .spam-instructions li {
+    font-size: 12px;
+  }
+
+  .spam-tip {
+    font-size: 12px;
+    padding: 8px;
+  }
+
   .code-inputs {
     gap: 8px;
   }
@@ -293,6 +412,31 @@
 
   .verify-email-container {
     padding: 30px 20px;
+  }
+
+  .spam-help-box {
+    padding: 12px;
+  }
+
+  .spam-help-header {
+    font-size: 13px;
+  }
+
+  .email-icon {
+    font-size: 18px;
+  }
+
+  .spam-instructions h4 {
+    font-size: 12px;
+  }
+
+  .spam-instructions li {
+    font-size: 11px;
+  }
+
+  .spam-tip {
+    font-size: 11px;
+    padding: 6px;
   }
 
   .code-input {
