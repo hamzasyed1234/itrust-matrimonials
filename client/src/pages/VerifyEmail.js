@@ -133,11 +133,6 @@ function VerifyEmail() {
             <strong>{email}</strong>
           </p>
 
-          {/* TEST - This should show */}
-          <div style={{background: 'yellow', padding: '10px', marginBottom: '20px'}}>
-            TEST BOX - Can you see this?
-          </div>
-
           {/* Spam Folder Help Box */}
           <div className="spam-help-box">
             <div className="spam-help-header">
