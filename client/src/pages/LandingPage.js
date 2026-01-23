@@ -103,7 +103,7 @@ function LandingPage() {
         <div className="modal-overlay" onClick={() => setShowHowItWorks(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setShowHowItWorks(false)}>✕</button>
-            <h2 className="modal-title">Our Values</h2>
+            <h2 className="modal-title">How it Works!</h2>
             <div className="modal-body">
               <p></p>
               
