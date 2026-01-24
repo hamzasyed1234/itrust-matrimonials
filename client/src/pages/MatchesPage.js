@@ -318,26 +318,7 @@ if (!user) {
                               </div>
                             )}
                           </div>
-                          <div className="card-actions" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              className="decline-btn-small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewProfile(request.sender._id, request._id);
-                              }}
-                            >
-                              ✗
-                            </button>
-                            <button
-                              className="accept-btn-small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewProfile(request.sender._id, request._id);
-                              }}
-                            >
-                              ✓
-                            </button>
-                          </div>
+                          
                         </div>
                       ))}
                     </div>
