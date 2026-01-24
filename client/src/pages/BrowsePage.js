@@ -38,6 +38,18 @@ const inchesOptions = [
   }))
 ];
 
+// Residency Status options
+const residencyStatusOptions = [
+  { value: 'Any', label: 'Any' },
+  { value: 'Citizen', label: 'Citizen' },
+  { value: 'Permanent Resident (PR)', label: 'Permanent Resident (PR)' },
+  { value: 'Green Card Holder', label: 'Green Card Holder' },
+  { value: 'Student Visa', label: 'Student Visa' },
+  { value: 'Work Permit', label: 'Work Permit' },
+  { value: 'Visitor / Tourist', label: 'Visitor / Tourist' },
+  { value: 'Other', label: 'Other' }
+];
+
 // Education options
 const educationOptions = [
   { value: 'Any', label: 'Any' },
@@ -128,6 +140,7 @@ function BrowsePage() {
     maritalStatus: 'Any',
     birthPlace: '',
     location: '',
+    residencyStatus: { value: 'Any', label: 'Any' },  // ADD THIS LINE
     profession: { value: 'Any', label: 'Any' },
     education: { value: 'Any', label: 'Any' },
     languages: [],
@@ -276,20 +289,49 @@ function BrowsePage() {
       );
     }
 
-    // Birth Place filter
+   // Birth Place filter - supports multiple comma-separated values
     if (filters.birthPlace.trim()) {
-      filtered = filtered.filter(profile => 
-        profile.birthPlace && profile.birthPlace.toLowerCase().includes(filters.birthPlace.toLowerCase())
-      );
+      const searchBirthPlaces = filters.birthPlace
+        .toLowerCase()
+        .split(',')
+        .map(place => place.trim())
+        .filter(place => place.length > 0);
+      
+      if (searchBirthPlaces.length > 0) {
+        filtered = filtered.filter(profile => {
+          if (!profile.birthPlace) return false;
+          
+          return searchBirthPlaces.some(searchPlace => 
+            profile.birthPlace.toLowerCase().includes(searchPlace)
+          );
+        });
+      }
     }
 
-    // Location filter
+    // Location filter - supports multiple comma-separated values
     if (filters.location.trim()) {
+      const searchLocations = filters.location
+        .toLowerCase()
+        .split(',')
+        .map(place => place.trim())
+        .filter(place => place.length > 0);
+      
+      if (searchLocations.length > 0) {
+        filtered = filtered.filter(profile => {
+          if (!profile.currentLocation) return false;
+          
+          return searchLocations.some(searchLocation => 
+            profile.currentLocation.toLowerCase().includes(searchLocation)
+          );
+        });
+      }
+    }
+    // Residency Status filter
+    if (filters.residencyStatus.value !== 'Any') {
       filtered = filtered.filter(profile => 
-        profile.currentLocation && profile.currentLocation.toLowerCase().includes(filters.location.toLowerCase())
+        profile.residencyStatus === filters.residencyStatus.value
       );
     }
-
     // Profession filter
     if (filters.profession.value !== 'Any') {
       filtered = filtered.filter(profile => 
@@ -343,23 +385,24 @@ function BrowsePage() {
   }, [filters, profiles]);
 
   const clearFilters = () => {
-    setFilters({
-      minAge: '',
-      maxAge: '',
-      ethnicity: { value: 'Any', label: 'Any' },
-      minHeightFeet: { value: '', label: 'Any' },
-      minHeightInches: { value: '', label: 'Any' },
-      maxHeightFeet: { value: '', label: 'Any' },
-      maxHeightInches: { value: '', label: 'Any' },
-      maritalStatus: 'Any',
-      birthPlace: '',
-      location: '',
-      profession: { value: 'Any', label: 'Any' },
-      education: { value: 'Any', label: 'Any' },
-      languages: [],
-      tags: ''
-    });
-  };
+  setFilters({
+    minAge: '',
+    maxAge: '',
+    ethnicity: { value: 'Any', label: 'Any' },
+    minHeightFeet: { value: '', label: 'Any' },
+    minHeightInches: { value: '', label: 'Any' },
+    maxHeightFeet: { value: '', label: 'Any' },
+    maxHeightInches: { value: '', label: 'Any' },
+    maritalStatus: 'Any',
+    birthPlace: '',
+    location: '',
+    residencyStatus: { value: 'Any', label: 'Any' },  // ADD THIS LINE
+    profession: { value: 'Any', label: 'Any' },
+    education: { value: 'Any', label: 'Any' },
+    languages: [],
+    tags: ''
+  });
+};
 
   const openProfileModal = (profile) => {
     setSelectedProfile(profile);
@@ -696,28 +739,42 @@ if (!user) {
               </div>
 
               {/* Birth Place - Text Input */}
-              <div className="filter-group">
-                <label className="filter-label">Birth Place</label>
-                <input
-                  type="text"
-                  className="filter-input"
-                  placeholder="Enter city or country"
-                  value={filters.birthPlace}
-                  onChange={(e) => setFilters(prev => ({ ...prev, birthPlace: e.target.value }))}
-                />
-              </div>
+                <div className="filter-group">
+                  <label className="filter-label">Birth Place</label>
+                  <input
+                    type="text"
+                    className="filter-input"
+                    placeholder="Cairo, United States, London"
+                    value={filters.birthPlace}
+                    onChange={(e) => setFilters(prev => ({ ...prev, birthPlace: e.target.value }))}
+                  />
+                  <p className="filter-hint">Separate places with commas</p>
+                </div>
 
-              {/* Location - Text Input */}
-              <div className="filter-group">
-                <label className="filter-label">Current Location</label>
-                <input
-                  type="text"
-                  className="filter-input"
-                  placeholder="Enter city or country"
-                  value={filters.location}
-                  onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-                />
-              </div>
+                {/* Location - Text Input */}
+                <div className="filter-group">
+                  <label className="filter-label">Current Location</label>
+                  <input
+                    type="text"
+                    className="filter-input"
+                    placeholder="Canada, Hyderabad, New york"
+                    value={filters.location}
+                    onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
+                  />
+                  <p className="filter-hint">Separate places with commas</p>
+                </div>
+
+               {/* Residency Status - Dropdown */}
+                <div className="filter-group">
+                  <label className="filter-label">Residency Status</label>
+                  <Select
+                    options={residencyStatusOptions}
+                    value={filters.residencyStatus}
+                    onChange={(option) => setFilters(prev => ({ ...prev, residencyStatus: option }))}
+                    styles={customSelectStyles}
+                    placeholder="Any"
+                  />
+                </div>
 
               {/* Profession - Dropdown */}
               <div className="filter-group">
@@ -763,7 +820,7 @@ if (!user) {
                 <input
                   type="text"
                   className="filter-input tags-filter-input"
-                  placeholder="e.g., Hafiz, Salafi"
+                  placeholder="Hafidh, MJCET, Shafi'i"
                   value={filters.tags}
                   onChange={(e) => setFilters(prev => ({ ...prev, tags: e.target.value }))}
                 />
@@ -883,6 +940,10 @@ if (!user) {
                 <div className="profile-info-item">
                   <div className="profile-info-label">Current Location</div>
                   <div className="profile-info-value">{selectedProfile.currentLocation || 'N/A'}</div>
+                </div>
+                <div className="profile-info-item">
+                  <div className="profile-info-label">Residency Status</div>
+                  <div className="profile-info-value">{selectedProfile.residencyStatus || 'N/A'}</div>
                 </div>
                 <div className="profile-info-item">
                   <div className="profile-info-label">Profession</div>

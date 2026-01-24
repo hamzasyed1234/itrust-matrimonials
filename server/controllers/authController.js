@@ -3,6 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendVerificationEmail } = require('../utils/emailService');
 
+// Store verification codes temporarily (in-memory, or use Redis for production)
+// Format: { email: { code, expires, userData } }
+const pendingVerifications = new Map();
+
 // Generate random 6-digit verification code
 const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -10,17 +14,17 @@ const generateVerificationCode = () => {
 
 // Generate random avatar path (1-10)
 const getRandomAvatar = () => {
-  const randomNumber = Math.floor(Math.random() * 10) + 1; // 1 to 10
+  const randomNumber = Math.floor(Math.random() * 10) + 1;
   return `/avatars/avatar${randomNumber}.jpg`;
 };
 
-// Register new user
+// Register - just send code, DON'T create user yet
 exports.register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, dateOfBirth, gender } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already registered' });
     }
@@ -41,41 +45,37 @@ exports.register = async (req, res) => {
     // Assign random avatar
     const randomAvatar = getRandomAvatar();
 
-    console.log('=== NEW USER REGISTRATION ===');
+    console.log('=== VERIFICATION CODE GENERATED ===');
     console.log('Email:', email);
-    console.log('Generated code:', verificationCode);
-    console.log('Code expires:', new Date(verificationCodeExpires));
-    console.log('Assigned avatar:', randomAvatar);
+    console.log('Code:', verificationCode);
+    console.log('Expires:', new Date(verificationCodeExpires));
 
-    // Create new user with random avatar
-    const user = new User({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      dateOfBirth,
-      gender,
-      profilePicture: randomAvatar, // Assign random landscape avatar
-      verificationCode: verificationCode,
-      verificationCodeExpires: verificationCodeExpires
+    // Store user data temporarily (NOT in database yet!)
+    pendingVerifications.set(email.toLowerCase(), {
+      code: verificationCode,
+      expires: verificationCodeExpires,
+      userData: {
+        firstName,
+        lastName,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        dateOfBirth,
+        gender,
+        profilePicture: randomAvatar
+      }
     });
 
-    await user.save();
-    console.log('User saved to database with avatar:', randomAvatar);
-
-    // Send verification email with code
+    // Send verification email
     try {
       await sendVerificationEmail(email, verificationCode, firstName);
       console.log('Verification email sent successfully');
     } catch (emailError) {
       console.error('Error sending email:', emailError);
-      // Continue even if email fails - user can resend
     }
 
     res.status(201).json({ 
-      message: 'Registration successful! Please check your email for verification code.',
-      email: email,
-      userId: user._id 
+      message: 'Verification code sent! Please check your email.',
+      email: email
     });
 
   } catch (error) {
@@ -84,52 +84,56 @@ exports.register = async (req, res) => {
   }
 };
 
-// Verify email with code
+// Verify email - NOW create the user
 exports.verifyEmail = async (req, res) => {
   try {
     const { email, code } = req.body;
     
-    console.log('=== EMAIL VERIFICATION REQUEST ===');
+    console.log('=== EMAIL VERIFICATION ===');
     console.log('Email:', email);
-    console.log('Code received:', code);
+    console.log('Code:', code);
 
     if (!email || !code) {
       return res.status(400).json({ message: 'Email and verification code are required' });
     }
 
-    // Find user with matching email and code
-    const user = await User.findOne({
-      email: email.toLowerCase(),
-      verificationCode: code,
-      verificationCodeExpires: { $gt: Date.now() }
-    });
+    // Get pending verification data
+    const pending = pendingVerifications.get(email.toLowerCase());
 
-    if (!user) {
-      console.log('Invalid or expired code');
-      
-      // Check if user exists but code is wrong/expired
-      const userExists = await User.findOne({ email: email.toLowerCase() });
-      if (userExists && userExists.isEmailVerified) {
-        return res.status(400).json({ message: 'Email already verified' });
-      }
-      if (userExists && userExists.verificationCodeExpires < Date.now()) {
-        return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
-      }
-      
+    if (!pending) {
+      return res.status(400).json({ 
+        message: 'No pending verification found. Please sign up again.' 
+      });
+    }
+
+    // Check if code expired
+    if (pending.expires < Date.now()) {
+      pendingVerifications.delete(email.toLowerCase());
+      return res.status(400).json({ 
+        message: 'Verification code has expired. Please sign up again.' 
+      });
+    }
+
+    // Check if code matches
+    if (pending.code !== code) {
       return res.status(400).json({ message: 'Invalid verification code' });
     }
 
-    console.log('Verifying email for user:', user.email);
+    console.log('✅ Code verified! Creating user now...');
 
-    // Mark email as verified and clear verification fields
-    user.isEmailVerified = true;
-    user.verificationCode = undefined;
-    user.verificationCodeExpires = undefined;
+    // NOW create the actual user in database
+    const user = new User({
+      ...pending.userData,
+      isEmailVerified: true
+    });
+
     await user.save();
+    console.log('✅ User created:', user.email);
 
-    console.log('Email verified successfully for:', user.email);
+    // Remove from pending verifications
+    pendingVerifications.delete(email.toLowerCase());
 
-    // Generate JWT token for auto-login after verification
+    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET,
@@ -145,7 +149,7 @@ exports.verifyEmail = async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         gender: user.gender,
-        profilePicture: user.profilePicture, // Include avatar
+        profilePicture: user.profilePicture,
         profileCompleted: user.profileCompleted
       }
     });
@@ -165,29 +169,27 @@ exports.resendVerificationCode = async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const pending = pendingVerifications.get(email.toLowerCase());
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (user.isEmailVerified) {
-      return res.status(400).json({ message: 'Email already verified' });
+    if (!pending) {
+      return res.status(404).json({ 
+        message: 'No pending verification found. Please sign up again.' 
+      });
     }
 
     // Generate new code
     const verificationCode = generateVerificationCode();
-    const verificationCodeExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const verificationCodeExpires = Date.now() + 10 * 60 * 1000;
 
-    user.verificationCode = verificationCode;
-    user.verificationCodeExpires = verificationCodeExpires;
-    await user.save();
+    // Update the pending verification
+    pending.code = verificationCode;
+    pending.expires = verificationCodeExpires;
+    pendingVerifications.set(email.toLowerCase(), pending);
 
-    console.log('New verification code generated for:', email);
-    console.log('Code:', verificationCode);
+    console.log('New code generated:', verificationCode);
 
     // Send new verification email
-    await sendVerificationEmail(email, verificationCode, user.firstName);
+    await sendVerificationEmail(email, verificationCode, pending.userData.firstName);
 
     res.status(200).json({ 
       message: 'Verification code has been resent to your email' 
@@ -204,28 +206,26 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
+    
     if (!user) {
+      // Check if there's pending verification
+      if (pendingVerifications.has(email.toLowerCase())) {
+        return res.status(401).json({ 
+          message: 'Please verify your email before logging in',
+          requiresVerification: true,
+          email: email
+        });
+      }
+      
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Check if email is verified
-    if (!user.isEmailVerified) {
-      return res.status(401).json({ 
-        message: 'Please verify your email before logging in',
-        requiresVerification: true,
-        email: user.email
-      });
-    }
-
-    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET,
@@ -241,7 +241,7 @@ exports.login = async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         gender: user.gender,
-        profilePicture: user.profilePicture, // Include avatar
+        profilePicture: user.profilePicture,
         profileCompleted: user.profileCompleted
       }
     });

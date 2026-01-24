@@ -27,6 +27,17 @@ const feetOptions = [
   { value: 7, label: "7'" }
 ];
 
+// Residency Status options
+const residencyStatusOptions = [
+  { value: 'Citizen', label: 'Citizen' },
+  { value: 'Permanent Resident (PR)', label: 'Permanent Resident (PR)' },
+  { value: 'Green Card Holder', label: 'Green Card Holder' },
+  { value: 'Student Visa', label: 'Student Visa' },
+  { value: 'Work Permit', label: 'Work Permit' },
+  { value: 'Visitor / Tourist', label: 'Visitor / Tourist' },
+  { value: 'Other', label: 'Other' }
+];
+
 // Height options - Inches (0" to 11")
 const inchesOptions = Array.from({ length: 12 }, (_, i) => ({
   value: i,
@@ -861,6 +872,39 @@ useEffect(() => {
                     </>
                   )}
                 </div>
+                
+                 {/* Residency Status */}
+                <div className="info-row editable">
+                  {editingField === 'residencyStatus' ? (
+                    <>
+                      <span className="info-label">🛂 Residency Status *</span>
+                      <div className="edit-controls">
+                        <Select
+                          options={residencyStatusOptions}
+                          value={residencyStatusOptions.find(opt => opt.value === editValue)}
+                          onChange={(option) => setEditValue(option.value)}
+                          onKeyDown={handleKeyDown}
+                          styles={customSelectStyles}
+                          placeholder="Select residency status..."
+                          autoFocus
+                        />
+                        <button className="save-btn" onClick={saveField} disabled={saving}>
+                          {saving ? '...' : '✓'}
+                        </button>
+                        <button className="cancel-btn" onClick={cancelEditing}>✕</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <button className="edit-icon" onClick={() => startEditing('residencyStatus', user.residencyStatus)}>
+                        ✏️
+                      </button>
+                      <span className="info-label">🛂 Residency Status *</span>
+                      <span className="info-value">{user.residencyStatus || 'Required'}</span>
+                    </>
+                  )}
+                </div>
+
 
                 {/* Profession */}
                 <div className="info-row editable">

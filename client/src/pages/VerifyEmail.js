@@ -17,7 +17,7 @@ function VerifyEmail() {
     if (location.state?.email) {
       setEmail(location.state.email);
     } else {
-      navigate('/signup');
+      navigate('/');
     }
   }, [location, navigate]);
 
@@ -193,9 +193,9 @@ function VerifyEmail() {
 
           <button 
             className="back-btn"
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate('/')}
           >
-            ← Back to Signup
+            ← Back
           </button>
         </div>
       </div>

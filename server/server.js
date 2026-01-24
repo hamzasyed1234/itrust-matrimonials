@@ -46,13 +46,23 @@ app.use(cookieParser());
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Log all requests in development
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path}`);
-    next();
-  });
-}
+// Log all requests (but limit in production)
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    // Detailed logging in development
+    console.log(`📨 ${req.method} ${req.path}`);
+    if (req.body && Object.keys(req.body).length > 0) {
+      console.log('Body:', req.body);
+    }
+  } else {
+    // Minimal logging in production (only important routes)
+    if (req.path.includes('/auth/') || req.path.includes('/connections/')) {
+      console.log(`${req.method} ${req.path}`);
+    }
+  }
+  next();
+});
+
 
 // Test route
 app.get('/', (req, res) => {

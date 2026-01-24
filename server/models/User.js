@@ -71,6 +71,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+
+  residencyStatus: {
+  type: String,
+  default: '',
+  enum: ['', 'Citizen', 'Permanent Resident (PR)', 'Green Card Holder', 'Student Visa', 'Work Permit', 'Visitor / Tourist', 'Other']
+  },
+
   profession: {
     type: String,
     default: ''

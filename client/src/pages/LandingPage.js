@@ -109,17 +109,18 @@ function LandingPage() {
               
               <div className="feature">
                 <h3>🎯 Complete Your Profile</h3>
-                <p>Upon signing up, you will be required to complete your profile before viewing other users.</p>
+                <p>Upon signing up, you must complete your profile before searching for matches.</p>
               </div>
 
               <div className="feature">
                 <h3>🔍 Meeting Your Match</h3>
-                <p>With the help of filters and tags, finding your match has never been easier. Once you find the right person, send a connection request.</p>
+                <p>Filters and tags make it easy to find your match—send a connection request to initiate contact.</p>
               </div>
 
               <div className="feature">
                 <h3>💬 Get to Know Them</h3>
-                <p>After your request is accepted, connect with your match instantly via WhatsApp with a single click from the Matches page.</p>
+                <p>Once accepted, the contact number appears on the Matches page.</p>
+                <p>We recommend calling before sharing sensitive information.</p>
               </div>
             </div>
           </div>
