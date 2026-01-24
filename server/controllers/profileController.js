@@ -42,6 +42,12 @@ exports.updateProfile = async (req, res) => {
     if (req.body.currentLocation !== undefined && req.body.currentLocation !== '' && req.body.currentLocation !== 'undefined') {
       user.currentLocation = req.body.currentLocation;
     }
+    
+    // Residency Status
+    if (req.body.residencyStatus !== undefined && req.body.residencyStatus !== '' && req.body.residencyStatus !== 'undefined') {
+      user.residencyStatus = req.body.residencyStatus;
+    }
+    
     if (req.body.profession !== undefined && req.body.profession !== '' && req.body.profession !== 'undefined') {
       user.profession = req.body.profession;
     }
@@ -80,8 +86,8 @@ exports.updateProfile = async (req, res) => {
       }
     }
     
-
-     if (req.body.tags) {
+    // Handle tags
+    if (req.body.tags) {
       try {
         const parsedTags = JSON.parse(req.body.tags);
         if (Array.isArray(parsedTags)) {
@@ -95,8 +101,6 @@ exports.updateProfile = async (req, res) => {
         console.error('Error parsing tags:', e);
       }
     }
-
-
     
     // Check if ALL required fields are completed
     const requiredFields = [
@@ -104,6 +108,7 @@ exports.updateProfile = async (req, res) => {
       'height',
       'birthPlace',
       'currentLocation',
+      'residencyStatus',
       'profession',
       'education',
       'maritalStatus',
