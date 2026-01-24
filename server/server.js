@@ -83,6 +83,7 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
+
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
@@ -94,6 +95,9 @@ app.use('/api/browse', browseRoutes);
 
 const connectionRoutes = require('./routes/connections');
 app.use('/api/connections', connectionRoutes);
+
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

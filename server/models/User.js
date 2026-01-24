@@ -46,6 +46,12 @@ const userSchema = new mongoose.Schema({
     default: null
   },
   
+  // Add this field
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+
   // Phase 2 - Profile
   profileCompleted: {
     type: Boolean,

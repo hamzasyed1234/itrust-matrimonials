@@ -282,7 +282,8 @@ exports.login = async (req, res) => {
         email: user.email,
         gender: user.gender,
         profilePicture: user.profilePicture,
-        profileCompleted: user.profileCompleted
+        profileCompleted: user.profileCompleted,
+        isAdmin: user.isAdmin || false  // ADD THIS LINE
       }
     });
 

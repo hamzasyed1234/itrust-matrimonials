@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import BrowsePage from './pages/BrowsePage';
 import MatchesPage from './pages/MatchesPage';
 import Feedback from './pages/Feedback';
+import AdminDashboard from './pages/AdminDashboard'; // ✅ ADDED
 
 import './App.css';
 
@@ -18,12 +19,13 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            {/* Updated: No token parameter needed anymore */}
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/browse" element={<BrowsePage />} />
             <Route path="/matches" element={<MatchesPage />} />
             <Route path="/feedback" element={<Feedback />} />
+            {/* ✅ ADDED: Admin route */}
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </div>
       </Router>

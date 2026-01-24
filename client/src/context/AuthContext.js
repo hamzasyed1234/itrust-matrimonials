@@ -34,7 +34,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = (token, userData) => {
     localStorage.setItem('token', token);
-    setUser(userData);
+    // ✅ UPDATED: Make sure isAdmin is included
+    setUser({
+      ...userData,
+      isAdmin: userData.isAdmin || false
+    });
     setLoading(false);
   };
 

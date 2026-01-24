@@ -66,8 +66,12 @@ function Login({ onClose, onSwitchToSignUp }) {
       // Close modal
       onClose();
 
-      // Always navigate to home page
-      navigate('/home');
+      // ✅ UPDATED: Check if user is admin and redirect accordingly
+      if (response.data.user.isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/home');
+      }
 
     } catch (error) {
       console.error('Login error:', error);
