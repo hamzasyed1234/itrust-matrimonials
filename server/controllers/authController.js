@@ -18,6 +18,36 @@ const getRandomAvatar = () => {
   return `/avatars/avatar${randomNumber}.jpg`;
 };
 
+// Helper function to check profile completion
+const checkProfileCompletion = (user) => {
+  const requiredFields = [
+    'ethnicity',
+    'height',
+    'birthPlace',
+    'currentLocation',
+    'residencyStatus',
+    'profession',
+    'education',
+    'maritalStatus',
+    'phoneNumber'
+  ];
+
+  const allFieldsCompleted = requiredFields.every(field => {
+    const value = user[field];
+    // Check for null, undefined, empty string, or whitespace-only string
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string' && value.trim() === '') return false;
+    return true;
+  });
+
+  // Also check that languages array has at least one language
+  const hasLanguages = Array.isArray(user.languages) && 
+                       user.languages.length > 0 && 
+                       user.languages.some(lang => lang && lang.trim() !== '');
+
+  return allFieldsCompleted && hasLanguages;
+};
+
 // Register - just send code, DON'T create user yet
 exports.register = async (req, res) => {
   try {
@@ -201,7 +231,7 @@ exports.resendVerificationCode = async (req, res) => {
   }
 };
 
-// Login
+// Login with Profile Completion Check
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -224,6 +254,16 @@ exports.login = async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // ✨ CHECK AND UPDATE PROFILE COMPLETION STATUS ON EVERY LOGIN ✨
+    const isProfileComplete = checkProfileCompletion(user);
+    
+    // Only update if status has changed
+    if (user.profileCompleted !== isProfileComplete) {
+      user.profileCompleted = isProfileComplete;
+      await user.save();
+      console.log(`📋 Profile completion status updated for ${user.email}: ${isProfileComplete}`);
     }
 
     const token = jwt.sign(
