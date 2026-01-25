@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const axios = require('axios');
+const City = require('../models/City');
 
 // Get user profile
 exports.getProfile = async (req, res) => {
@@ -148,5 +150,97 @@ exports.updateProfile = async (req, res) => {
       message: 'Server error updating profile',
       error: error.message 
     });
+  }
+};
+
+// Search cities with database-first approach and API fallback
+exports.searchCities = async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query || query.length < 2) {
+      return res.json({ cities: [] });
+    }
+    
+    // STEP 1: Search our database first (FAST)
+    const searchRegex = new RegExp(`^${query}`, 'i');
+    
+    let cities = await City.find({
+      $or: [
+        { name: searchRegex },
+        { displayName: searchRegex }
+      ]
+    })
+      .sort({ population: -1 })
+      .limit(10)
+      .select('displayName')
+      .lean();
+    
+    // STEP 2: If we have results, return them immediately
+    if (cities.length > 0) {
+      console.log(`🔍 Search query: "${query}" | Results: ${cities.length} | Source: database`);
+      return res.json({ 
+        cities: cities.map(c => ({
+          value: c.displayName,
+          label: c.displayName
+        })),
+        source: 'database'
+      });
+    }
+    
+    // STEP 3: Only if no results, try external API as fallback (OPTIONAL)
+    try {
+      const geoapifyKey = process.env.GEOAPIFY_API_KEY;
+      
+      if (geoapifyKey) {
+        const response = await axios.get(
+          `https://api.geoapify.com/v1/geocode/autocomplete`,
+          {
+            params: {
+              text: query,
+              type: 'city',
+              limit: 5,
+              apiKey: geoapifyKey
+            },
+            timeout: 2000
+          }
+        );
+        
+        const apiCities = response.data.features.map(feature => {
+          const city = feature.properties.city || feature.properties.name;
+          const country = feature.properties.country;
+          const displayName = `${city}, ${country}`;
+          
+          // Cache to database for future searches
+          City.create({
+            name: city,
+            country: country,
+            displayName: displayName,
+            population: feature.properties.population || 0,
+            verified: false,
+            latitude: feature.properties.lat,
+            longitude: feature.properties.lon
+          }).catch(err => console.error('Error caching city:', err));
+          
+          return {
+            value: displayName,
+            label: displayName
+          };
+        });
+        
+        console.log(`🔍 Search query: "${query}" | Results: ${apiCities.length} | Source: api`);
+        return res.json({ cities: apiCities, source: 'api' });
+      }
+    } catch (apiError) {
+      console.error('API fallback failed:', apiError.message);
+    }
+    
+    // STEP 4: No results from either source
+    console.log(`🔍 Search query: "${query}" | Results: 0 | Source: none`);
+    return res.json({ cities: [], source: 'none' });
+    
+  } catch (error) {
+    console.error('Error searching cities:', error);
+    res.status(500).json({ message: 'Error searching cities' });
   }
 };

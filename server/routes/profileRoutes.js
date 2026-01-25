@@ -10,4 +10,7 @@ router.get('/', protect, profileController.getProfile);
 // Update profile (with image upload)
 router.put('/update', protect, upload.single('profilePicture'), profileController.updateProfile);
 
+// Add this near your other routes
+router.get('/search-cities', profileController.searchCities);
+
 module.exports = router;

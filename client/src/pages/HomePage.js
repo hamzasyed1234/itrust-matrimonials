@@ -233,58 +233,48 @@ useEffect(() => {
     return age;
   };
 
-  // Enhanced location fetching function
-  const fetchLocationSuggestionsEnhanced = async (query, setOptions, setLoading) => {
-    if (query.length < 3) {
-      setOptions([]);
-      return;
-    }
+  // ✅ NEW: Fast database search (replaces Nominatim)
+const fetchLocationSuggestionsEnhanced = async (query, setOptions, setLoading) => {
+  if (query.length < 2) {
+    setOptions([]);
+    return;
+  }
 
+  setLoading(true);
+  try {
+    const response = await api.get(`/profile/search-cities?query=${encodeURIComponent(query)}`);
+    setOptions(response.data.cities || []);
+  } catch (error) {
+    console.error('Error fetching cities:', error);
+    setOptions([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ✅ UPDATED: Faster debounce (150ms instead of 500ms)
+const handleLocationInputChange = (inputValue, field) => {
+  const setOptions = field === 'birthPlace' ? setBirthPlaceOptions : setCurrentLocationOptions;
+  const setLoading = field === 'birthPlace' ? setLoadingBirthPlace : setLoadingCurrentLocation;
+  
+  if (debounceTimer.current) {
+    clearTimeout(debounceTimer.current);
+  }
+  
+  // Show loading immediately for better UX
+  if (inputValue.length >= 2) {
     setLoading(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
-        {
-          headers: {
-            'User-Agent': 'TrustMatrimonials/1.0'
-          }
-        }
-      );
-      const data = await response.json();
-      
-      const suggestions = data.map(place => {
-        const city = place.address.city || place.address.town || place.address.village || '';
-        const country = place.address.country || '';
-        const displayValue = `${city}${city && country ? ', ' : ''}${country}`;
-        
-        return {
-          value: displayValue,
-          label: displayValue
-        };
-      }).filter(s => s.value);
-
-      setOptions(suggestions);
-    } catch (error) {
-      console.error('Error fetching locations:', error);
-      setOptions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle location input changes with debouncing
-  const handleLocationInputChange = (inputValue, field) => {
-    const setOptions = field === 'birthPlace' ? setBirthPlaceOptions : setCurrentLocationOptions;
-    const setLoading = field === 'birthPlace' ? setLoadingBirthPlace : setLoadingCurrentLocation;
-    
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    
-    debounceTimer.current = setTimeout(() => {
-      fetchLocationSuggestionsEnhanced(inputValue, setOptions, setLoading);
-    }, 500);
-  };
+  } else {
+    setOptions([]);
+    setLoading(false);
+    return;
+  }
+  
+  // Faster debounce - 150ms instead of 500ms for snappier response
+  debounceTimer.current = setTimeout(() => {
+    fetchLocationSuggestionsEnhanced(inputValue, setOptions, setLoading);
+  }, 150);
+};
 
   // Loading message component
   const LoadingMessage = () => (
