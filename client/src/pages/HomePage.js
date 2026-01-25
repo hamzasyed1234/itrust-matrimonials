@@ -1232,7 +1232,7 @@ const handleLocationInputChange = (inputValue, field) => {
             <button className="modal-close-btn" onClick={() => setShowAddInfo(false)}>✕</button>
             <h3>Add Tags</h3>
             <p className="modal-subtitle">
-              Add tags to describe yourself (e.g., Hafidh, MJCET Alumni, Hanafi, No Dargha etc.)
+              Add tags to describe yourself (Hafidh, MJCET, Hanafi, No Dargha, Hijab, Beard etc.)
             </p>
             
             <div className="modal-form">
@@ -1246,7 +1246,7 @@ const handleLocationInputChange = (inputValue, field) => {
                       setNewTag(e.target.value);
                     }
                   }}
-                  placeholder="e.g., Hafidh, MJCET Alumni, Hanafi"
+                  placeholder="Hafidh, MJCET, Hanafi, No Dargha, Hijab, Beard"
                   maxLength={20}
                   autoFocus
                   onKeyPress={(e) => {

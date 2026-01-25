@@ -132,18 +132,18 @@ function BrowsePage() {
   const [connectionStatuses, setConnectionStatuses] = useState({});
   const [error, setError] = useState(null);
 
-  // ✅ NEW: Location autocomplete states
+  // ✅ Location autocomplete states
   const debounceTimer = useRef(null);
   const [birthPlaceOptions, setBirthPlaceOptions] = useState([]);
   const [currentLocationOptions, setCurrentLocationOptions] = useState([]);
   const [loadingBirthPlace, setLoadingBirthPlace] = useState(false);
   const [loadingCurrentLocation, setLoadingCurrentLocation] = useState(false);
   
-  // ✅ NEW: Country states
+  // ✅ Country states
   const [countryOptions, setCountryOptions] = useState([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
 
-  // ✅ UPDATED: Filter states - NOW WITH COUNTRY FILTERS
+  // ✅ UPDATED: Filter states - NOW WITH MULTI-SELECT COUNTRY FILTERS
   const [filters, setFilters] = useState({
     minAge: '',
     maxAge: '',
@@ -153,9 +153,9 @@ function BrowsePage() {
     maxHeightFeet: { value: '', label: 'Any' },
     maxHeightInches: { value: '', label: 'Any' },
     maritalStatus: [],
-    birthCountry: null,         // ✅ NEW: Single country selection
+    birthCountry: [],           // ✅ CHANGED: null → [] for multi-select
     birthPlace: [],
-    currentCountry: null,       // ✅ NEW: Single country selection
+    currentCountry: [],         // ✅ CHANGED: null → [] for multi-select
     location: [],
     residencyStatus: [],
     profession: [],
@@ -170,7 +170,7 @@ function BrowsePage() {
     }
   }, [user, loading, navigate]);
 
-  // ✅ NEW: Fetch countries on mount
+  // ✅ Fetch countries on mount
   useEffect(() => {
     const fetchCountries = async () => {
       setLoadingCountries(true);
@@ -245,7 +245,7 @@ function BrowsePage() {
     }
   }, [error]);
 
-  // ✅ UPDATED: City search now accepts country parameter
+  // ✅ City search with country parameter
   const fetchLocationSuggestionsEnhanced = async (query, setOptions, setLoading, country = null) => {
     if (query.length < 2) {
       setOptions([]);
@@ -268,13 +268,14 @@ function BrowsePage() {
     }
   };
 
-  // ✅ UPDATED: Debounced city search with country filter
+  // ✅ UPDATED: Debounced city search with MULTIPLE countries filter
   const handleLocationInputChange = (inputValue, field) => {
     const setOptions = field === 'birthPlace' ? setBirthPlaceOptions : setCurrentLocationOptions;
     const setLoading = field === 'birthPlace' ? setLoadingBirthPlace : setLoadingCurrentLocation;
-    const country = field === 'birthPlace' 
-      ? (filters.birthCountry ? filters.birthCountry.value : null)
-      : (filters.currentCountry ? filters.currentCountry.value : null);
+    
+    // ✅ UPDATED: Get first selected country if multiple countries selected
+    const countries = field === 'birthPlace' ? filters.birthCountry : filters.currentCountry;
+    const country = (countries && countries.length > 0) ? countries[0].value : null;
     
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
@@ -293,7 +294,7 @@ function BrowsePage() {
     }, 150);
   };
 
-  // ✅ NEW: Clear cities when country changes
+  // ✅ Clear cities when country changes
   useEffect(() => {
     setFilters(prev => ({ ...prev, birthPlace: [] }));
     setBirthPlaceOptions([]);
@@ -327,7 +328,7 @@ function BrowsePage() {
     return null;
   };
 
-  // ✅ UPDATED: Filtering logic with country support
+  // ✅ UPDATED: Filtering logic with MULTIPLE countries support
   useEffect(() => {
     let filtered = [...profiles];
 
@@ -384,7 +385,7 @@ function BrowsePage() {
       });
     }
 
-    // ✅ UPDATED: Birth Place filter with country support
+    // ✅ UPDATED: Birth Place filter with MULTIPLE countries support
     if (filters.birthPlace.length > 0) {
       filtered = filtered.filter(profile => {
         if (!profile.birthPlace) return false;
@@ -392,15 +393,17 @@ function BrowsePage() {
           profile.birthPlace.toLowerCase().includes(filterPlace.value.toLowerCase())
         );
       });
-    } else if (filters.birthCountry) {
-      // Filter by country only if no cities selected
+    } else if (filters.birthCountry && filters.birthCountry.length > 0) {
+      // Filter by countries if no cities selected
       filtered = filtered.filter(profile => {
         if (!profile.birthPlace) return false;
-        return profile.birthPlace.toLowerCase().includes(filters.birthCountry.value.toLowerCase());
+        return filters.birthCountry.some(filterCountry =>
+          profile.birthPlace.toLowerCase().includes(filterCountry.label.toLowerCase())
+        );
       });
     }
 
-    // ✅ UPDATED: Current Location filter with country support
+    // ✅ UPDATED: Current Location filter with MULTIPLE countries support
     if (filters.location.length > 0) {
       filtered = filtered.filter(profile => {
         if (!profile.currentLocation) return false;
@@ -408,11 +411,13 @@ function BrowsePage() {
           profile.currentLocation.toLowerCase().includes(filterLoc.value.toLowerCase())
         );
       });
-    } else if (filters.currentCountry) {
-      // Filter by country only if no cities selected
+    } else if (filters.currentCountry && filters.currentCountry.length > 0) {
+      // Filter by countries if no cities selected
       filtered = filtered.filter(profile => {
         if (!profile.currentLocation) return false;
-        return profile.currentLocation.toLowerCase().includes(filters.currentCountry.value.toLowerCase());
+        return filters.currentCountry.some(filterCountry =>
+          profile.currentLocation.toLowerCase().includes(filterCountry.label.toLowerCase())
+        );
       });
     }
 
@@ -479,7 +484,7 @@ function BrowsePage() {
     setFilteredProfiles(filtered);
   }, [filters, profiles]);
 
-  // ✅ UPDATED: Clear filters includes countries
+  // ✅ UPDATED: Clear filters with empty arrays for countries
   const clearFilters = () => {
     setFilters({
       minAge: '',
@@ -490,9 +495,9 @@ function BrowsePage() {
       maxHeightFeet: { value: '', label: 'Any' },
       maxHeightInches: { value: '', label: 'Any' },
       maritalStatus: [],
-      birthCountry: null,
+      birthCountry: [],      // ✅ CHANGED: null → []
       birthPlace: [],
-      currentCountry: null,
+      currentCountry: [],    // ✅ CHANGED: null → []
       location: [],
       residencyStatus: [],
       profession: [],
@@ -618,7 +623,6 @@ function BrowsePage() {
   };
 
   const isProfileIncomplete = !user.profileCompleted;
-
 
   // Custom select styles
   const customSelectStyles = {
@@ -861,22 +865,23 @@ function BrowsePage() {
                 />
               </div>
 
-              {/* ✅ NEW: Birth Country Filter */}
+              {/* ✅ UPDATED: Birth Country Filter - NOW MULTI-SELECT */}
               <div className="filter-group">
                 <label className="filter-label">Birth Country</label>
                 <Select
                   options={countryOptions}
                   value={filters.birthCountry}
-                  onChange={(option) => setFilters(prev => ({ ...prev, birthCountry: option }))}
+                  onChange={(options) => setFilters(prev => ({ ...prev, birthCountry: options || [] }))}
                   styles={customSelectStyles}
-                  placeholder="Select country..."
+                  placeholder="Select countries..."
                   isLoading={loadingCountries}
                   isClearable
                   isSearchable
+                  isMulti
                 />
               </div>
 
-              {/* ✅ UPDATED: Birth Place - Now filtered by country */}
+              {/* ✅ UPDATED: Birth City - Now shows message for multiple countries */}
               <div className="filter-group">
                 <label className="filter-label">Birth City</label>
                 <Select
@@ -885,13 +890,21 @@ function BrowsePage() {
                   onChange={(options) => setFilters(prev => ({ ...prev, birthPlace: options || [] }))}
                   onInputChange={(value) => handleLocationInputChange(value, 'birthPlace')}
                   styles={customSelectStyles}
-                  placeholder={filters.birthCountry ? "Type city names..." : "Select country first"}
+                  placeholder={
+                    filters.birthCountry && filters.birthCountry.length > 0
+                      ? "Type city names..." 
+                      : "Select country first"
+                  }
                   isLoading={loadingBirthPlace}
                   isClearable
                   isSearchable
                   isMulti
-                  isDisabled={!filters.birthCountry}
-                  noOptionsMessage={() => filters.birthCountry ? "Type to search cities" : "Select a country first"}
+                  isDisabled={!filters.birthCountry || filters.birthCountry.length === 0}
+                  noOptionsMessage={() => 
+                    filters.birthCountry && filters.birthCountry.length > 0
+                      ? "Type to search cities" 
+                      : "Select a country first"
+                  }
                   loadingMessage={LoadingMessage}
                   components={{
                     DropdownIndicator: () => null,
@@ -899,26 +912,31 @@ function BrowsePage() {
                   }}
                 />
                 <p className="filter-hint">
-                  {filters.birthCountry ? "Type and select multiple cities" : "Select a country first"}
+                  {filters.birthCountry && filters.birthCountry.length > 0
+                    ? filters.birthCountry.length > 1
+                      ? `Searching in ${filters.birthCountry[0].label} (first selected country)`
+                      : "Type and select multiple cities"
+                    : "Select a country first"}
                 </p>
               </div>
 
-              {/* ✅ NEW: Current Country Filter */}
+              {/* ✅ UPDATED: Current Country Filter - NOW MULTI-SELECT */}
               <div className="filter-group">
                 <label className="filter-label">Current Country</label>
                 <Select
                   options={countryOptions}
                   value={filters.currentCountry}
-                  onChange={(option) => setFilters(prev => ({ ...prev, currentCountry: option }))}
+                  onChange={(options) => setFilters(prev => ({ ...prev, currentCountry: options || [] }))}
                   styles={customSelectStyles}
-                  placeholder="Select country..."
+                  placeholder="Select countries..."
                   isLoading={loadingCountries}
                   isClearable
                   isSearchable
+                  isMulti
                 />
               </div>
 
-              {/* ✅ UPDATED: Current Location - Now filtered by country */}
+              {/* ✅ UPDATED: Current City - Now shows message for multiple countries */}
               <div className="filter-group">
                 <label className="filter-label">Current City</label>
                 <Select
@@ -927,13 +945,21 @@ function BrowsePage() {
                   onChange={(options) => setFilters(prev => ({ ...prev, location: options || [] }))}
                   onInputChange={(value) => handleLocationInputChange(value, 'currentLocation')}
                   styles={customSelectStyles}
-                  placeholder={filters.currentCountry ? "Type city names..." : "Select country first"}
+                  placeholder={
+                    filters.currentCountry && filters.currentCountry.length > 0
+                      ? "Type city names..." 
+                      : "Select country first"
+                  }
                   isLoading={loadingCurrentLocation}
                   isClearable
                   isSearchable
                   isMulti
-                  isDisabled={!filters.currentCountry}
-                  noOptionsMessage={() => filters.currentCountry ? "Type to search cities" : "Select a country first"}
+                  isDisabled={!filters.currentCountry || filters.currentCountry.length === 0}
+                  noOptionsMessage={() => 
+                    filters.currentCountry && filters.currentCountry.length > 0
+                      ? "Type to search cities" 
+                      : "Select a country first"
+                  }
                   loadingMessage={LoadingMessage}
                   components={{
                     DropdownIndicator: () => null,
@@ -941,7 +967,11 @@ function BrowsePage() {
                   }}
                 />
                 <p className="filter-hint">
-                  {filters.currentCountry ? "Type and select multiple cities" : "Select a country first"}
+                  {filters.currentCountry && filters.currentCountry.length > 0
+                    ? filters.currentCountry.length > 1
+                      ? `Searching in ${filters.currentCountry[0].label} (first selected country)`
+                      : "Type and select multiple cities"
+                    : "Select a country first"}
                 </p>
               </div>
 
@@ -1004,7 +1034,7 @@ function BrowsePage() {
                 <input
                   type="text"
                   className="filter-input tags-filter-input"
-                  placeholder="Hafidh, MJCET, Shafi'i"
+                  placeholder="Hafidh, MJCET, Beard, Hijab"
                   value={filters.tags}
                   onChange={(e) => setFilters(prev => ({ ...prev, tags: e.target.value }))}
                 />
