@@ -41,7 +41,7 @@ function Feedback() {
 
     try {
       // Replace 'your-email@example.com' with your actual email
-      const response = await fetch('https://formsubmit.co/ajax/hamzasy416@gmail.com', {
+      const response = await fetch('https://formsubmit.co/ajax/info@itrustmuslimmatrimonials.com', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -153,10 +153,11 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// Search cities with database-first approach and API fallback
+// ✅ UPDATED: Search cities with database-first approach and API fallback
+// Now accepts optional 'country' parameter to filter cities by country
 exports.searchCities = async (req, res) => {
   try {
-    const { query } = req.query;
+    const { query, country } = req.query; // ✅ ADDED: country parameter
     
     if (!query || query.length < 2) {
       return res.json({ cities: [] });
@@ -165,12 +166,21 @@ exports.searchCities = async (req, res) => {
     // STEP 1: Search our database first (FAST)
     const searchRegex = new RegExp(`^${query}`, 'i');
     
-    let cities = await City.find({
+    // ✅ ADDED: Build search conditions with optional country filter
+    const searchConditions = {
       $or: [
         { name: searchRegex },
         { displayName: searchRegex }
       ]
-    })
+    };
+    
+    // ✅ ADDED: Filter by country if provided
+    if (country) {
+      searchConditions.country = country;
+    }
+    
+    // ✅ UPDATED: Use searchConditions instead of inline query
+    let cities = await City.find(searchConditions)
       .sort({ population: -1 })
       .limit(10)
       .select('displayName')
@@ -178,7 +188,8 @@ exports.searchCities = async (req, res) => {
     
     // STEP 2: If we have results, return them immediately
     if (cities.length > 0) {
-      console.log(`🔍 Search query: "${query}" | Results: ${cities.length} | Source: database`);
+      // ✅ UPDATED: Log now includes country filter if present
+      console.log(`🔍 Search query: "${query}"${country ? ` | Country: ${country}` : ''} | Results: ${cities.length} | Source: database`);
       return res.json({ 
         cities: cities.map(c => ({
           value: c.displayName,
@@ -242,5 +253,28 @@ exports.searchCities = async (req, res) => {
   } catch (error) {
     console.error('Error searching cities:', error);
     res.status(500).json({ message: 'Error searching cities' });
+  }
+};
+
+// ✅ NEW: Get unique countries from database
+exports.getCountries = async (req, res) => {
+  try {
+    const { countryMap } = require('../utils/countries');
+    
+    // Get all unique country codes from City collection
+    const countryCodes = await City.find({}).distinct('country');
+    
+    // Map country codes to full names and format for Select dropdown
+    const countries = countryCodes
+      .map(code => ({
+        value: code,
+        label: countryMap[code] || code
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    
+    res.json({ countries });
+  } catch (error) {
+    console.error('Error fetching countries:', error);
+    res.status(500).json({ message: 'Error fetching countries', error: error.message });
   }
 };
