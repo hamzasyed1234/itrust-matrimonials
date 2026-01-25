@@ -92,6 +92,7 @@
   top: 100px;
   box-shadow: 0 10px 40px rgba(230, 99, 134, 0.1);
   overflow: visible;
+  z-index: 1;
 }
 
 .filters-header {
@@ -107,6 +108,13 @@
 .filter-group {
   margin-bottom: 24px;
   overflow: visible;
+  position: relative;
+  z-index: auto;
+}
+
+/* Active dropdown gets highest z-index */
+.filter-group:has([class*="-menu"]) {
+  z-index: 9999 !important;
 }
 
 .filter-label {
@@ -129,6 +137,8 @@
   font-size: 14px;
   transition: all 0.3s ease;
   font-family: inherit;
+  position: relative;
+  z-index: 1;
 }
 
 .filter-select:focus,
@@ -137,6 +147,7 @@
   border-color: #E66386;
   background-color: #FFFFFF;
   box-shadow: 0 0 0 3px rgba(230, 99, 134, 0.1);
+  z-index: 2;
 }
 
 .filter-select {
@@ -179,13 +190,26 @@
   color: #2D2D2D !important;
 }
 
-/* Make sure react-select dropdowns appear above everything */
+/* React-select dropdown z-index fix */
 .filter-group > div[class*="container"] {
-  z-index: 100;
+  position: relative;
+  z-index: 1;
 }
 
-.filter-group:has(> div[class*="menu"]) {
-  z-index: 200;
+/* When menu is open, boost the z-index dramatically */
+.filter-group > div[class*="container"]:has([class*="-menu"]) {
+  z-index: 9999 !important;
+}
+
+/* Ensure the menu itself has proper z-index */
+.filter-group [class*="-menu"] {
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+/* Ensure menu portal has highest z-index */
+.filter-group [class*="MenuPortal"] {
+  z-index: 9999 !important;
 }
 
 .tags-filter-input {
@@ -205,6 +229,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .clear-filters-btn:hover {
@@ -220,6 +246,8 @@
 /* Profiles Grid */
 .profiles-section {
   min-height: 400px;
+  position: relative;
+  z-index: 1;
 }
 
 .profiles-count {
@@ -256,12 +284,14 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(230, 99, 134, 0.08);
+  z-index: 1;
 }
 
 .user-card:hover {
   border-color: #E66386;
   transform: translateY(-8px);
   box-shadow: 0 15px 40px rgba(230, 99, 134, 0.2);
+  z-index: 2;
 }
 
 .user-card::before {
@@ -397,6 +427,7 @@
   font-size: 16px;
 }
 
+
 /* Profile Modal */
 .profile-modal-overlay {
   position: fixed;
@@ -431,6 +462,7 @@
   position: relative;
   animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   box-shadow: 0 30px 80px rgba(230, 99, 134, 0.2);
+  z-index: 1001;
 }
 
 @keyframes slideUp {
