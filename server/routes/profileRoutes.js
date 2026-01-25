@@ -16,7 +16,4 @@ router.get('/countries', profileController.getCountries);
 // Search cities (optionally filtered by country)
 router.get('/search-cities', profileController.searchCities);
 
-// Get unique countries
-router.get('/countries', profileController.getCountries);
-
 module.exports = router;
