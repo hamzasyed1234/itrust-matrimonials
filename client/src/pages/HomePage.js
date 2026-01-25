@@ -31,7 +31,6 @@ const feetOptions = [
 const residencyStatusOptions = [
   { value: 'Citizen', label: 'Citizen' },
   { value: 'Permanent Resident (PR)', label: 'Permanent Resident (PR)' },
-  { value: 'Green Card Holder', label: 'Green Card Holder' },
   { value: 'Student Visa', label: 'Student Visa' },
   { value: 'Work Permit', label: 'Work Permit' },
   { value: 'Visitor / Tourist', label: 'Visitor / Tourist' },
