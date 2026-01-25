@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import { AuthContext } from '../context/AuthContext';
@@ -6,9 +6,8 @@ import Navbar from '../components/Navbar';
 import api from '../utils/api';
 import './BrowsePage.css';
 
-// Ethnicity options
+// Ethnicity options - NOW MULTI-SELECT
 const ethnicityOptions = [
-  { value: 'Any', label: 'Any' },
   { value: 'African', label: 'African' },
   { value: 'European', label: 'European' },
   { value: 'East Asian', label: 'East Asian' },
@@ -38,9 +37,8 @@ const inchesOptions = [
   }))
 ];
 
-// Residency Status options
+// Residency Status options - NOW MULTI-SELECT
 const residencyStatusOptions = [
-  { value: 'Any', label: 'Any' },
   { value: 'Citizen', label: 'Citizen' },
   { value: 'Permanent Resident (PR)', label: 'Permanent Resident (PR)' },
   { value: 'Student Visa', label: 'Student Visa' },
@@ -49,9 +47,17 @@ const residencyStatusOptions = [
   { value: 'Other', label: 'Other' }
 ];
 
-// Education options
+// Marital Status options - NOW MULTI-SELECT
+const maritalStatusOptions = [
+  { value: 'Never Married', label: 'Never Married' },
+  { value: 'Annulled/Dissolved', label: 'Annulled/Dissolved' },
+  { value: 'Divorced', label: 'Divorced' },
+  { value: 'Widowed', label: 'Widowed' },
+  { value: 'Married', label: 'Married' }
+];
+
+// Education options - NOW MULTI-SELECT
 const educationOptions = [
-  { value: 'Any', label: 'Any' },
   { value: 'High School Diploma', label: 'High School Diploma' },
   { value: 'College Diploma', label: 'College Diploma' },
   { value: "Bachelor's Degree", label: "Bachelor's Degree" },
@@ -60,9 +66,8 @@ const educationOptions = [
   { value: 'Other / Prefer Not to Say', label: 'Other / Prefer Not to Say' }
 ];
 
-// Profession options
+// Profession options - NOW MULTI-SELECT
 const professionOptions = [
-  { value: 'Any', label: 'Any' },
   { value: 'Software Engineer', label: 'Software Engineer' },
   { value: 'Doctor', label: 'Doctor' },
   { value: 'Teacher', label: 'Teacher' },
@@ -127,21 +132,28 @@ function BrowsePage() {
   const [connectionStatuses, setConnectionStatuses] = useState({});
   const [error, setError] = useState(null);
 
-  // Filter states - Updated for new filter types
+  // ✅ NEW: Location autocomplete states (like HomePage)
+  const debounceTimer = useRef(null);
+  const [birthPlaceOptions, setBirthPlaceOptions] = useState([]);
+  const [currentLocationOptions, setCurrentLocationOptions] = useState([]);
+  const [loadingBirthPlace, setLoadingBirthPlace] = useState(false);
+  const [loadingCurrentLocation, setLoadingCurrentLocation] = useState(false);
+
+  // ✅ UPDATED: Filter states - NOW ALL MULTI-SELECT
   const [filters, setFilters] = useState({
     minAge: '',
     maxAge: '',
-    ethnicity: { value: 'Any', label: 'Any' },
+    ethnicity: [],              // ✅ NOW ARRAY
     minHeightFeet: { value: '', label: 'Any' },
     minHeightInches: { value: '', label: 'Any' },
     maxHeightFeet: { value: '', label: 'Any' },
     maxHeightInches: { value: '', label: 'Any' },
-    maritalStatus: 'Any',
-    birthPlace: '',
-    location: '',
-    residencyStatus: { value: 'Any', label: 'Any' },  // ADD THIS LINE
-    profession: { value: 'Any', label: 'Any' },
-    education: { value: 'Any', label: 'Any' },
+    maritalStatus: [],          // ✅ NOW ARRAY
+    birthPlace: [],             // ✅ NOW ARRAY (multi-select cities)
+    location: [],               // ✅ NOW ARRAY (multi-select cities)
+    residencyStatus: [],        // ✅ NOW ARRAY
+    profession: [],             // ✅ NOW ARRAY
+    education: [],              // ✅ NOW ARRAY
     languages: [],
     tags: ''
   });
@@ -209,6 +221,47 @@ function BrowsePage() {
     }
   }, [error]);
 
+  // ✅ NEW: Fast database city search (from HomePage)
+  const fetchLocationSuggestionsEnhanced = async (query, setOptions, setLoading) => {
+    if (query.length < 2) {
+      setOptions([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.get(`/profile/search-cities?query=${encodeURIComponent(query)}`);
+      setOptions(response.data.cities || []);
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+      setOptions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ NEW: Debounced city search handler
+  const handleLocationInputChange = (inputValue, field) => {
+    const setOptions = field === 'birthPlace' ? setBirthPlaceOptions : setCurrentLocationOptions;
+    const setLoading = field === 'birthPlace' ? setLoadingBirthPlace : setLoadingCurrentLocation;
+    
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    if (inputValue.length >= 2) {
+      setLoading(true);
+    } else {
+      setOptions([]);
+      setLoading(false);
+      return;
+    }
+    
+    debounceTimer.current = setTimeout(() => {
+      fetchLocationSuggestionsEnhanced(inputValue, setOptions, setLoading);
+    }, 150);
+  };
+
   const calculateAge = (dateOfBirth) => {
     if (!dateOfBirth) return null;
     const today = new Date();
@@ -233,7 +286,7 @@ function BrowsePage() {
     return null;
   };
 
-  // Updated filtering logic
+  // ✅ UPDATED: Filtering logic with multi-select support
   useEffect(() => {
     let filtered = [...profiles];
 
@@ -251,14 +304,17 @@ function BrowsePage() {
       });
     }
 
-    // Ethnicity filter
-    if (filters.ethnicity.value !== 'Any') {
-      filtered = filtered.filter(profile => 
-        profile.ethnicity && profile.ethnicity.toLowerCase().includes(filters.ethnicity.value.toLowerCase())
-      );
+    // ✅ Ethnicity filter - MULTI-SELECT
+    if (filters.ethnicity.length > 0) {
+      filtered = filtered.filter(profile => {
+        if (!profile.ethnicity) return false;
+        return filters.ethnicity.some(filterEth => 
+          profile.ethnicity.toLowerCase().includes(filterEth.value.toLowerCase())
+        );
+      });
     }
 
-    // Height filters - convert to inches for comparison
+    // Height filters
     if (filters.minHeightFeet.value !== '' || filters.minHeightInches.value !== '') {
       const minFeet = filters.minHeightFeet.value || 0;
       const minInches = filters.minHeightInches.value || 0;
@@ -281,71 +337,67 @@ function BrowsePage() {
       });
     }
 
-    // Marital Status filter
-    if (filters.maritalStatus !== 'Any') {
-      filtered = filtered.filter(profile => 
-        profile.maritalStatus === filters.maritalStatus
-      );
+    // ✅ Marital Status filter - MULTI-SELECT
+    if (filters.maritalStatus.length > 0) {
+      filtered = filtered.filter(profile => {
+        if (!profile.maritalStatus) return false;
+        return filters.maritalStatus.some(filterStatus => 
+          profile.maritalStatus === filterStatus.value
+        );
+      });
     }
 
-   // Birth Place filter - supports multiple comma-separated values
-    if (filters.birthPlace.trim()) {
-      const searchBirthPlaces = filters.birthPlace
-        .toLowerCase()
-        .split(',')
-        .map(place => place.trim())
-        .filter(place => place.length > 0);
-      
-      if (searchBirthPlaces.length > 0) {
-        filtered = filtered.filter(profile => {
-          if (!profile.birthPlace) return false;
-          
-          return searchBirthPlaces.some(searchPlace => 
-            profile.birthPlace.toLowerCase().includes(searchPlace)
-          );
-        });
-      }
+    // ✅ Birth Place filter - MULTI-SELECT (database cities)
+    if (filters.birthPlace.length > 0) {
+      filtered = filtered.filter(profile => {
+        if (!profile.birthPlace) return false;
+        return filters.birthPlace.some(filterPlace => 
+          profile.birthPlace.toLowerCase().includes(filterPlace.value.toLowerCase())
+        );
+      });
     }
 
-    // Location filter - supports multiple comma-separated values
-    if (filters.location.trim()) {
-      const searchLocations = filters.location
-        .toLowerCase()
-        .split(',')
-        .map(place => place.trim())
-        .filter(place => place.length > 0);
-      
-      if (searchLocations.length > 0) {
-        filtered = filtered.filter(profile => {
-          if (!profile.currentLocation) return false;
-          
-          return searchLocations.some(searchLocation => 
-            profile.currentLocation.toLowerCase().includes(searchLocation)
-          );
-        });
-      }
-    }
-    // Residency Status filter
-    if (filters.residencyStatus.value !== 'Any') {
-      filtered = filtered.filter(profile => 
-        profile.residencyStatus === filters.residencyStatus.value
-      );
-    }
-    // Profession filter
-    if (filters.profession.value !== 'Any') {
-      filtered = filtered.filter(profile => 
-        profile.profession && profile.profession.toLowerCase().includes(filters.profession.value.toLowerCase())
-      );
+    // ✅ Current Location filter - MULTI-SELECT (database cities)
+    if (filters.location.length > 0) {
+      filtered = filtered.filter(profile => {
+        if (!profile.currentLocation) return false;
+        return filters.location.some(filterLoc => 
+          profile.currentLocation.toLowerCase().includes(filterLoc.value.toLowerCase())
+        );
+      });
     }
 
-    // Education filter
-    if (filters.education.value !== 'Any') {
-      filtered = filtered.filter(profile => 
-        profile.education && profile.education.toLowerCase().includes(filters.education.value.toLowerCase())
-      );
+    // ✅ Residency Status filter - MULTI-SELECT
+    if (filters.residencyStatus.length > 0) {
+      filtered = filtered.filter(profile => {
+        if (!profile.residencyStatus) return false;
+        return filters.residencyStatus.some(filterStatus => 
+          profile.residencyStatus === filterStatus.value
+        );
+      });
     }
 
-    // Languages filter
+    // ✅ Profession filter - MULTI-SELECT
+    if (filters.profession.length > 0) {
+      filtered = filtered.filter(profile => {
+        if (!profile.profession) return false;
+        return filters.profession.some(filterProf => 
+          profile.profession.toLowerCase().includes(filterProf.value.toLowerCase())
+        );
+      });
+    }
+
+    // ✅ Education filter - MULTI-SELECT
+    if (filters.education.length > 0) {
+      filtered = filtered.filter(profile => {
+        if (!profile.education) return false;
+        return filters.education.some(filterEdu => 
+          profile.education.toLowerCase().includes(filterEdu.value.toLowerCase())
+        );
+      });
+    }
+
+    // Languages filter - already multi-select
     if (filters.languages.length > 0) {
       filtered = filtered.filter(profile => {
         if (!profile.languages || profile.languages.length === 0) return false;
@@ -383,25 +435,30 @@ function BrowsePage() {
     setFilteredProfiles(filtered);
   }, [filters, profiles]);
 
+  // ✅ UPDATED: Clear filters with empty arrays
   const clearFilters = () => {
-  setFilters({
-    minAge: '',
-    maxAge: '',
-    ethnicity: { value: 'Any', label: 'Any' },
-    minHeightFeet: { value: '', label: 'Any' },
-    minHeightInches: { value: '', label: 'Any' },
-    maxHeightFeet: { value: '', label: 'Any' },
-    maxHeightInches: { value: '', label: 'Any' },
-    maritalStatus: 'Any',
-    birthPlace: '',
-    location: '',
-    residencyStatus: { value: 'Any', label: 'Any' },  // ADD THIS LINE
-    profession: { value: 'Any', label: 'Any' },
-    education: { value: 'Any', label: 'Any' },
-    languages: [],
-    tags: ''
-  });
-};
+    setFilters({
+      minAge: '',
+      maxAge: '',
+      ethnicity: [],
+      minHeightFeet: { value: '', label: 'Any' },
+      minHeightInches: { value: '', label: 'Any' },
+      maxHeightFeet: { value: '', label: 'Any' },
+      maxHeightInches: { value: '', label: 'Any' },
+      maritalStatus: [],
+      birthPlace: [],
+      location: [],
+      residencyStatus: [],
+      profession: [],
+      education: [],
+      languages: [],
+      tags: ''
+    });
+    // Clear autocomplete options too
+    setBirthPlaceOptions([]);
+    setCurrentLocationOptions([]);
+  };
+
 
   const openProfileModal = (profile) => {
     setSelectedProfile(profile);
@@ -489,34 +546,30 @@ function BrowsePage() {
     );
   };
 
-  
-if (loading || loadingProfiles) {
-  return (
-    <div className="browse-page">
-      <Navbar onLogout={handleLogout} activeTab="browse" />
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p className="loading-text">Loading profiles...</p>
+  if (loading || loadingProfiles) {
+    return (
+      <div className="browse-page">
+        <Navbar onLogout={handleLogout} activeTab="browse" />
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Loading profiles...</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-if (!user) {
-  return null;
-}
+  if (!user) {
+    return null;
+  }
 
   const profileImageUrl = (picturePath) => {
     if (!picturePath) return null;
-    
     if (picturePath.startsWith('http://') || picturePath.startsWith('https://')) {
       return picturePath;
     }
-    
     if (picturePath.startsWith('/avatars/')) {
       return picturePath;
     }
-    
     return `/avatars/${picturePath}`;
   };
 
@@ -586,8 +639,38 @@ if (!user) {
     singleValue: (provided) => ({
       ...provided,
       color: '#2D2D2D'
+    }),
+    loadingIndicator: () => ({
+      display: 'none'
+    }),
+    noOptionsMessage: (provided) => ({
+      ...provided,
+      color: '#999999',
+      padding: '10px'
     })
   };
+
+  // ✅ NEW: Loading message for city search
+  const LoadingMessage = () => (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      gap: '10px',
+      color: '#E66386'
+    }}>
+      <div style={{
+        width: '16px',
+        height: '16px',
+        border: '2px solid #FFE0E9',
+        borderTop: '2px solid #E66386',
+        borderRadius: '50%',
+        animation: 'spin 0.6s linear infinite'
+      }} />
+      <span style={{ fontSize: '14px' }}>Searching locations...</span>
+    </div>
+  );
 
   return (
     <div className="browse-page">
@@ -667,15 +750,16 @@ if (!user) {
                 </div>
               </div>
 
-              {/* Ethnicity Filter - Dropdown */}
+              {/* ✅ Ethnicity Filter - NOW MULTI-SELECT */}
               <div className="filter-group">
                 <label className="filter-label">Ethnicity</label>
                 <Select
                   options={ethnicityOptions}
                   value={filters.ethnicity}
-                  onChange={(option) => setFilters(prev => ({ ...prev, ethnicity: option }))}
+                  onChange={(options) => setFilters(prev => ({ ...prev, ethnicity: options || [] }))}
                   styles={customSelectStyles}
-                  placeholder="Any"
+                  placeholder="Select ethnicities..."
+                  isMulti
                 />
               </div>
 
@@ -720,87 +804,108 @@ if (!user) {
                 </div>
               </div>
 
-              {/* Marital Status - Dropdown */}
+              {/* ✅ Marital Status - NOW MULTI-SELECT */}
               <div className="filter-group">
                 <label className="filter-label">Marital Status</label>
-                <select
-                  className="filter-select"
+                <Select
+                  options={maritalStatusOptions}
                   value={filters.maritalStatus}
-                  onChange={(e) => setFilters(prev => ({ ...prev, maritalStatus: e.target.value }))}
-                >
-                  <option value="Any">Any</option>
-                  <option value="Never Married">Never Married</option>
-                  <option value="Annulled/Dissolved">Annulled/Dissolved</option>
-                  <option value="Divorced">Divorced</option>
-                  <option value="Widowed">Widowed</option>
-                  <option value="Married">Married</option>
-                </select>
+                  onChange={(options) => setFilters(prev => ({ ...prev, maritalStatus: options || [] }))}
+                  styles={customSelectStyles}
+                  placeholder="Select statuses..."
+                  isMulti
+                />
               </div>
 
-              {/* Birth Place - Text Input */}
-                <div className="filter-group">
-                  <label className="filter-label">Birth Place</label>
-                  <input
-                    type="text"
-                    className="filter-input"
-                    placeholder="Cairo, United States, London"
-                    value={filters.birthPlace}
-                    onChange={(e) => setFilters(prev => ({ ...prev, birthPlace: e.target.value }))}
-                  />
-                  <p className="filter-hint">Separate places with commas</p>
-                </div>
+              {/* ✅ Birth Place - NOW MULTI-SELECT WITH DATABASE CITIES */}
+              <div className="filter-group">
+                <label className="filter-label">Birth Place</label>
+                <Select
+                  options={birthPlaceOptions}
+                  value={filters.birthPlace}
+                  onChange={(options) => setFilters(prev => ({ ...prev, birthPlace: options || [] }))}
+                  onInputChange={(value) => handleLocationInputChange(value, 'birthPlace')}
+                  styles={customSelectStyles}
+                  placeholder="Type city names..."
+                  isLoading={loadingBirthPlace}
+                  isClearable
+                  isSearchable
+                  isMulti
+                  noOptionsMessage={() => "Type to search cities"}
+                  loadingMessage={LoadingMessage}
+                  components={{
+                    DropdownIndicator: () => null,
+                    IndicatorSeparator: () => null
+                  }}
+                />
+                <p className="filter-hint">Type and select multiple cities</p>
+              </div>
 
-                {/* Location - Text Input */}
-                <div className="filter-group">
-                  <label className="filter-label">Current Location</label>
-                  <input
-                    type="text"
-                    className="filter-input"
-                    placeholder="Canada, Hyderabad, New york"
-                    value={filters.location}
-                    onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-                  />
-                  <p className="filter-hint">Separate places with commas</p>
-                </div>
+              {/* ✅ Current Location - NOW MULTI-SELECT WITH DATABASE CITIES */}
+              <div className="filter-group">
+                <label className="filter-label">Current Location</label>
+                <Select
+                  options={currentLocationOptions}
+                  value={filters.location}
+                  onChange={(options) => setFilters(prev => ({ ...prev, location: options || [] }))}
+                  onInputChange={(value) => handleLocationInputChange(value, 'currentLocation')}
+                  styles={customSelectStyles}
+                  placeholder="Type city names..."
+                  isLoading={loadingCurrentLocation}
+                  isClearable
+                  isSearchable
+                  isMulti
+                  noOptionsMessage={() => "Type to search cities"}
+                  loadingMessage={LoadingMessage}
+                  components={{
+                    DropdownIndicator: () => null,
+                    IndicatorSeparator: () => null
+                  }}
+                />
+                <p className="filter-hint">Type and select multiple cities</p>
+              </div>
 
-               {/* Residency Status - Dropdown */}
-                <div className="filter-group">
-                  <label className="filter-label">Residency Status</label>
-                  <Select
-                    options={residencyStatusOptions}
-                    value={filters.residencyStatus}
-                    onChange={(option) => setFilters(prev => ({ ...prev, residencyStatus: option }))}
-                    styles={customSelectStyles}
-                    placeholder="Any"
-                  />
-                </div>
+              {/* ✅ Residency Status - NOW MULTI-SELECT */}
+              <div className="filter-group">
+                <label className="filter-label">Residency Status</label>
+                <Select
+                  options={residencyStatusOptions}
+                  value={filters.residencyStatus}
+                  onChange={(options) => setFilters(prev => ({ ...prev, residencyStatus: options || [] }))}
+                  styles={customSelectStyles}
+                  placeholder="Select statuses..."
+                  isMulti
+                />
+              </div>
 
-              {/* Profession - Dropdown */}
+              {/* ✅ Profession - NOW MULTI-SELECT */}
               <div className="filter-group">
                 <label className="filter-label">Profession</label>
                 <Select
                   options={professionOptions}
                   value={filters.profession}
-                  onChange={(option) => setFilters(prev => ({ ...prev, profession: option }))}
+                  onChange={(options) => setFilters(prev => ({ ...prev, profession: options || [] }))}
                   styles={customSelectStyles}
-                  placeholder="Any"
+                  placeholder="Select professions..."
+                  isMulti
                   isSearchable
                 />
               </div>
 
-              {/* Education - Dropdown */}
+              {/* ✅ Education - NOW MULTI-SELECT */}
               <div className="filter-group">
                 <label className="filter-label">Education</label>
                 <Select
                   options={educationOptions}
                   value={filters.education}
-                  onChange={(option) => setFilters(prev => ({ ...prev, education: option }))}
+                  onChange={(options) => setFilters(prev => ({ ...prev, education: options || [] }))}
                   styles={customSelectStyles}
-                  placeholder="Any"
+                  placeholder="Select education levels..."
+                  isMulti
                 />
               </div>
 
-              {/* Languages - Multi-select */}
+              {/* Languages - Multi-select (already was) */}
               <div className="filter-group">
                 <label className="filter-label">Languages</label>
                 <Select
@@ -808,7 +913,7 @@ if (!user) {
                   value={filters.languages}
                   onChange={(options) => setFilters(prev => ({ ...prev, languages: options || [] }))}
                   styles={customSelectStyles}
-                  placeholder="Select languages"
+                  placeholder="Select languages..."
                   isMulti
                 />
               </div>
@@ -881,6 +986,7 @@ if (!user) {
         )}
       </div>
 
+      {/* Profile Modal - keeping same as before */}
       {showProfileModal && selectedProfile && (
         <div className="profile-modal-overlay" onClick={closeProfileModal}>
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>

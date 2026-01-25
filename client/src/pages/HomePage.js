@@ -1191,19 +1191,27 @@ const handleLocationInputChange = (inputValue, field) => {
               </div>
             </div>
 
-            <div className="stats-card">
+           <div className="stats-card">
               <div className="card-header">
                 <h3>📊 Your Statistics</h3>
               </div>
               <div className="stats-content">
-                <div className="stat-item">
+                <div 
+                  className="stat-item clickable" 
+                  onClick={() => navigate('/matches')}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="stat-icon">💝</div>
                   <div className="stat-info">
                     <span className="stat-value">{user.pendingMatchRequests || 0}</span>
                     <span className="stat-label">Connection Requests</span>
                   </div>
                 </div>
-                <div className="stat-item">
+                <div 
+                  className="stat-item clickable" 
+                  onClick={() => navigate('/matches')}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="stat-icon">💬</div>
                   <div className="stat-info">
                     <span className="stat-value">{user.matchCount || 0}</span>

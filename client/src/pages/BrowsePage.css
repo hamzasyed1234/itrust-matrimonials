@@ -173,6 +173,21 @@
   font-style: italic;
 }
 
+/* Multi-select filter styling */
+.filter-group .css-1dimb5e-singleValue,
+.filter-group .css-qbdosj-Input {
+  color: #2D2D2D !important;
+}
+
+/* Make sure react-select dropdowns appear above everything */
+.filter-group > div[class*="container"] {
+  z-index: 100;
+}
+
+.filter-group:has(> div[class*="menu"]) {
+  z-index: 200;
+}
+
 .tags-filter-input {
   font-family: inherit;
 }

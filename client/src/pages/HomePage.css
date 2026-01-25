@@ -1761,6 +1761,21 @@ div[class*="menu"] {
     padding: 16px;
   }
 
+  /* Clickable stat items */
+.stat-item.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.stat-item.clickable:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(230, 99, 134, 0.2);
+  border-color: #E66386;
+}
+
+.stat-item.clickable:active {
+  transform: translateY(-2px) scale(1.01);
+}
   .stat-icon {
     font-size: 28px;
     width: 45px;
