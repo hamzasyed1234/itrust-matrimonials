@@ -95,6 +95,42 @@
   z-index: 1;
 }
 
+/* ✅ NEW: Filter Toggle Button (Mobile Only) */
+.filters-toggle-btn {
+  display: none; /* Hidden on desktop */
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #E66386 0%, #FFB3C6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(230, 99, 134, 0.25);
+  letter-spacing: 0.5px;
+  margin-bottom: 0;
+}
+
+.filters-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(230, 99, 134, 0.35);
+}
+
+.filters-toggle-btn:active {
+  transform: translateY(0);
+}
+
+/* ✅ NEW: Filters Content Container */
+.filters-content {
+  display: block;
+}
+
+.filters-content.hidden {
+  display: none;
+}
+
 .filters-header {
   color: #E66386;
   font-size: 26px;
@@ -928,6 +964,7 @@
   box-shadow: 0 12px 35px rgba(230, 99, 134, 0.4);
 }
 
+
 .complete-profile-btn:active {
   transform: translateY(0);
 }
@@ -969,8 +1006,26 @@
     border-radius: 20px;
   }
 
+  /* ✅ NEW: Show toggle button on mobile, adjust padding */
   .filters-sidebar {
-    padding: 24px;
+    padding: 20px;
+  }
+
+  .filters-sidebar.collapsed {
+    padding: 20px;
+  }
+
+  .filters-toggle-btn {
+    display: block; /* Show on mobile */
+  }
+
+  .filters-content.hidden {
+    display: none;
+  }
+
+  /* ✅ When filters are expanded, add spacing */
+  .filters-content {
+    margin-top: 20px;
   }
 
   .user-card {
@@ -1050,8 +1105,13 @@
     font-size: 16px;
   }
 
+  /* ✅ Reduced padding for collapsed state */
   .filters-sidebar {
-    padding: 20px;
+    padding: 16px;
+  }
+
+  .filters-sidebar.collapsed {
+    padding: 16px;
   }
 
   .user-card {
@@ -1172,3 +1232,5 @@
     gap: 8px;
   }
 }
+
+

@@ -131,6 +131,9 @@ function BrowsePage() {
   const [sending, setSending] = useState(false);
   const [connectionStatuses, setConnectionStatuses] = useState({});
   const [error, setError] = useState(null);
+  
+  // ✅ NEW: Filter collapse state for mobile
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   // ✅ Location autocomplete states
   const debounceTimer = useRef(null);
@@ -153,9 +156,9 @@ function BrowsePage() {
     maxHeightFeet: { value: '', label: 'Any' },
     maxHeightInches: { value: '', label: 'Any' },
     maritalStatus: [],
-    birthCountry: [],           // ✅ CHANGED: null → [] for multi-select
+    birthCountry: [],
     birthPlace: [],
-    currentCountry: [],         // ✅ CHANGED: null → [] for multi-select
+    currentCountry: [],
     location: [],
     residencyStatus: [],
     profession: [],
@@ -163,6 +166,18 @@ function BrowsePage() {
     languages: [],
     tags: ''
   });
+
+  // ✅ NEW: Detect if mobile screen size
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -495,9 +510,9 @@ function BrowsePage() {
       maxHeightFeet: { value: '', label: 'Any' },
       maxHeightInches: { value: '', label: 'Any' },
       maritalStatus: [],
-      birthCountry: [],      // ✅ CHANGED: null → []
+      birthCountry: [],
       birthPlace: [],
-      currentCountry: [],    // ✅ CHANGED: null → []
+      currentCountry: [],
       location: [],
       residencyStatus: [],
       profession: [],
@@ -770,280 +785,294 @@ function BrowsePage() {
           </div>
         ) : (
           <div className="browse-layout">
-            <div className="filters-sidebar">
-              <h2 className="filters-header">Filters</h2>
+            {/* ✅ NEW: Collapsible filters for mobile */}
+            <div className={`filters-sidebar ${isMobile && !filtersExpanded ? 'collapsed' : ''}`}>
+              {/* ✅ NEW: Toggle button for mobile */}
+              {isMobile && (
+                <button 
+                  className="filters-toggle-btn"
+                  onClick={() => setFiltersExpanded(!filtersExpanded)}
+                >
+                  {filtersExpanded ? '✕ Hide Filters' : '🔍 Show Filters'}
+                </button>
+              )}
 
-              {/* Age Filter */}
-              <div className="filter-group">
-                <label className="filter-label">Age</label>
-                <div className="min-max-inputs">
+              {/* ✅ Filters content - hidden when collapsed on mobile */}
+              <div className={`filters-content ${isMobile && !filtersExpanded ? 'hidden' : ''}`}>
+                <h2 className="filters-header">Filters</h2>
+
+                {/* Age Filter */}
+                <div className="filter-group">
+                  <label className="filter-label">Age</label>
+                  <div className="min-max-inputs">
+                    <input
+                      type="number"
+                      className="filter-input"
+                      placeholder="Min"
+                      value={filters.minAge}
+                      onChange={(e) => setFilters(prev => ({ ...prev, minAge: e.target.value }))}
+                      min="18"
+                      max="100"
+                    />
+                    <input
+                      type="number"
+                      className="filter-input"
+                      placeholder="Max"
+                      value={filters.maxAge}
+                      onChange={(e) => setFilters(prev => ({ ...prev, maxAge: e.target.value }))}
+                      min="18"
+                      max="100"
+                    />
+                  </div>
+                </div>
+
+                {/* Ethnicity Filter */}
+                <div className="filter-group">
+                  <label className="filter-label">Ethnicity</label>
+                  <Select
+                    options={ethnicityOptions}
+                    value={filters.ethnicity}
+                    onChange={(options) => setFilters(prev => ({ ...prev, ethnicity: options || [] }))}
+                    styles={customSelectStyles}
+                    placeholder="Select ethnicities..."
+                    isMulti
+                  />
+                </div>
+
+                {/* Height Filters */}
+                <div className="filter-group">
+                  <label className="filter-label">Min Height</label>
+                  <div className="height-selects">
+                    <Select
+                      options={feetOptions}
+                      value={filters.minHeightFeet}
+                      onChange={(option) => setFilters(prev => ({ ...prev, minHeightFeet: option }))}
+                      styles={customSelectStyles}
+                      placeholder="Feet"
+                    />
+                    <Select
+                      options={inchesOptions}
+                      value={filters.minHeightInches}
+                      onChange={(option) => setFilters(prev => ({ ...prev, minHeightInches: option }))}
+                      styles={customSelectStyles}
+                      placeholder="Inches"
+                    />
+                  </div>
+                </div>
+
+                <div className="filter-group">
+                  <label className="filter-label">Max Height</label>
+                  <div className="height-selects">
+                    <Select
+                      options={feetOptions}
+                      value={filters.maxHeightFeet}
+                      onChange={(option) => setFilters(prev => ({ ...prev, maxHeightFeet: option }))}
+                      styles={customSelectStyles}
+                      placeholder="Feet"
+                    />
+                    <Select
+                      options={inchesOptions}
+                      value={filters.maxHeightInches}
+                      onChange={(option) => setFilters(prev => ({ ...prev, maxHeightInches: option }))}
+                      styles={customSelectStyles}
+                      placeholder="Inches"
+                    />
+                  </div>
+                </div>
+
+                {/* Marital Status */}
+                <div className="filter-group">
+                  <label className="filter-label">Marital Status</label>
+                  <Select
+                    options={maritalStatusOptions}
+                    value={filters.maritalStatus}
+                    onChange={(options) => setFilters(prev => ({ ...prev, maritalStatus: options || [] }))}
+                    styles={customSelectStyles}
+                    placeholder="Select statuses..."
+                    isMulti
+                  />
+                </div>
+
+                {/* Birth Country Filter */}
+                <div className="filter-group">
+                  <label className="filter-label">Birth Country</label>
+                  <Select
+                    options={countryOptions}
+                    value={filters.birthCountry}
+                    onChange={(options) => setFilters(prev => ({ ...prev, birthCountry: options || [] }))}
+                    styles={customSelectStyles}
+                    placeholder="Select countries..."
+                    isLoading={loadingCountries}
+                    isClearable
+                    isSearchable
+                    isMulti
+                  />
+                </div>
+
+                {/* Birth City */}
+                <div className="filter-group">
+                  <label className="filter-label">Birth City</label>
+                  <Select
+                    options={birthPlaceOptions}
+                    value={filters.birthPlace}
+                    onChange={(options) => setFilters(prev => ({ ...prev, birthPlace: options || [] }))}
+                    onInputChange={(value) => handleLocationInputChange(value, 'birthPlace')}
+                    styles={customSelectStyles}
+                    placeholder={
+                      filters.birthCountry && filters.birthCountry.length > 0
+                        ? "Type city names..." 
+                        : "Select country first"
+                    }
+                    isLoading={loadingBirthPlace}
+                    isClearable
+                    isSearchable
+                    isMulti
+                    isDisabled={!filters.birthCountry || filters.birthCountry.length === 0}
+                    noOptionsMessage={() => 
+                      filters.birthCountry && filters.birthCountry.length > 0
+                        ? "Type to search cities" 
+                        : "Select a country first"
+                    }
+                    loadingMessage={LoadingMessage}
+                    components={{
+                      DropdownIndicator: () => null,
+                      IndicatorSeparator: () => null
+                    }}
+                  />
+                  <p className="filter-hint">
+                    {filters.birthCountry && filters.birthCountry.length > 0
+                      ? filters.birthCountry.length > 1
+                        ? `Searching in ${filters.birthCountry[0].label} (first selected country)`
+                        : "Type and select multiple cities"
+                      : "Select a country first"}
+                  </p>
+                </div>
+
+                {/* Current Country Filter */}
+                <div className="filter-group">
+                  <label className="filter-label">Current Country</label>
+                  <Select
+                    options={countryOptions}
+                    value={filters.currentCountry}
+                    onChange={(options) => setFilters(prev => ({ ...prev, currentCountry: options || [] }))}
+                    styles={customSelectStyles}
+                    placeholder="Select countries..."
+                    isLoading={loadingCountries}
+                    isClearable
+                    isSearchable
+                    isMulti
+                  />
+                </div>
+
+                {/* Current City */}
+                <div className="filter-group">
+                  <label className="filter-label">Current City</label>
+                  <Select
+                    options={currentLocationOptions}
+                    value={filters.location}
+                    onChange={(options) => setFilters(prev => ({ ...prev, location: options || [] }))}
+                    onInputChange={(value) => handleLocationInputChange(value, 'currentLocation')}
+                    styles={customSelectStyles}
+                    placeholder={
+                      filters.currentCountry && filters.currentCountry.length > 0
+                        ? "Type city names..." 
+                        : "Select country first"
+                    }
+                    isLoading={loadingCurrentLocation}
+                    isClearable
+                    isSearchable
+                    isMulti
+                    isDisabled={!filters.currentCountry || filters.currentCountry.length === 0}
+                    noOptionsMessage={() => 
+                      filters.currentCountry && filters.currentCountry.length > 0
+                        ? "Type to search cities" 
+                        : "Select a country first"
+                    }
+                    loadingMessage={LoadingMessage}
+                    components={{
+                      DropdownIndicator: () => null,
+                      IndicatorSeparator: () => null
+                    }}
+                  />
+                  <p className="filter-hint">
+                    {filters.currentCountry && filters.currentCountry.length > 0
+                      ? filters.currentCountry.length > 1
+                        ? `Searching in ${filters.currentCountry[0].label} (first selected country)`
+                        : "Type and select multiple cities"
+                      : "Select a country first"}
+                  </p>
+                </div>
+
+                {/* Residency Status */}
+                <div className="filter-group">
+                  <label className="filter-label">Residency Status</label>
+                  <Select
+                    options={residencyStatusOptions}
+                    value={filters.residencyStatus}
+                    onChange={(options) => setFilters(prev => ({ ...prev, residencyStatus: options || [] }))}
+                    styles={customSelectStyles}
+                    placeholder="Select statuses..."
+                    isMulti
+                  />
+                </div>
+
+                {/* Profession */}
+                <div className="filter-group">
+                  <label className="filter-label">Profession</label>
+                  <Select
+                    options={professionOptions}
+                    value={filters.profession}
+                    onChange={(options) => setFilters(prev => ({ ...prev, profession: options || [] }))}
+                    styles={customSelectStyles}
+                    placeholder="Select professions..."
+                    isMulti
+                    isSearchable
+                  />
+                </div>
+
+                {/* Education */}
+                <div className="filter-group">
+                  <label className="filter-label">Education</label>
+                  <Select
+                    options={educationOptions}
+                    value={filters.education}
+                    onChange={(options) => setFilters(prev => ({ ...prev, education: options || [] }))}
+                    styles={customSelectStyles}
+                    placeholder="Select education levels..."
+                    isMulti
+                  />
+                </div>
+
+                {/* Languages */}
+                <div className="filter-group">
+                  <label className="filter-label">Languages</label>
+                  <Select
+                    options={languageOptions}
+                    value={filters.languages}
+                    onChange={(options) => setFilters(prev => ({ ...prev, languages: options || [] }))}
+                    styles={customSelectStyles}
+                    placeholder="Select languages..."
+                    isMulti
+                  />
+                </div>
+
+                {/* Tags */}
+                <div className="filter-group">
+                  <label className="filter-label">Tags</label>
                   <input
-                    type="number"
-                    className="filter-input"
-                    placeholder="Min"
-                    value={filters.minAge}
-                    onChange={(e) => setFilters(prev => ({ ...prev, minAge: e.target.value }))}
-                    min="18"
-                    max="100"
+                    type="text"
+                    className="filter-input tags-filter-input"
+                    placeholder="Hafidh, MJCET, Beard, Hijab"
+                    value={filters.tags}
+                    onChange={(e) => setFilters(prev => ({ ...prev, tags: e.target.value }))}
                   />
-                  <input
-                    type="number"
-                    className="filter-input"
-                    placeholder="Max"
-                    value={filters.maxAge}
-                    onChange={(e) => setFilters(prev => ({ ...prev, maxAge: e.target.value }))}
-                    min="18"
-                    max="100"
-                  />
+                  <p className="filter-hint">Separate tags with commas</p>
                 </div>
-              </div>
 
-              {/* Ethnicity Filter */}
-              <div className="filter-group">
-                <label className="filter-label">Ethnicity</label>
-                <Select
-                  options={ethnicityOptions}
-                  value={filters.ethnicity}
-                  onChange={(options) => setFilters(prev => ({ ...prev, ethnicity: options || [] }))}
-                  styles={customSelectStyles}
-                  placeholder="Select ethnicities..."
-                  isMulti
-                />
+                <button className="clear-filters-btn" onClick={clearFilters}>
+                  Clear All Filters
+                </button>
               </div>
-
-              {/* Height Filters */}
-              <div className="filter-group">
-                <label className="filter-label">Min Height</label>
-                <div className="height-selects">
-                  <Select
-                    options={feetOptions}
-                    value={filters.minHeightFeet}
-                    onChange={(option) => setFilters(prev => ({ ...prev, minHeightFeet: option }))}
-                    styles={customSelectStyles}
-                    placeholder="Feet"
-                  />
-                  <Select
-                    options={inchesOptions}
-                    value={filters.minHeightInches}
-                    onChange={(option) => setFilters(prev => ({ ...prev, minHeightInches: option }))}
-                    styles={customSelectStyles}
-                    placeholder="Inches"
-                  />
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <label className="filter-label">Max Height</label>
-                <div className="height-selects">
-                  <Select
-                    options={feetOptions}
-                    value={filters.maxHeightFeet}
-                    onChange={(option) => setFilters(prev => ({ ...prev, maxHeightFeet: option }))}
-                    styles={customSelectStyles}
-                    placeholder="Feet"
-                  />
-                  <Select
-                    options={inchesOptions}
-                    value={filters.maxHeightInches}
-                    onChange={(option) => setFilters(prev => ({ ...prev, maxHeightInches: option }))}
-                    styles={customSelectStyles}
-                    placeholder="Inches"
-                  />
-                </div>
-              </div>
-
-              {/* Marital Status */}
-              <div className="filter-group">
-                <label className="filter-label">Marital Status</label>
-                <Select
-                  options={maritalStatusOptions}
-                  value={filters.maritalStatus}
-                  onChange={(options) => setFilters(prev => ({ ...prev, maritalStatus: options || [] }))}
-                  styles={customSelectStyles}
-                  placeholder="Select statuses..."
-                  isMulti
-                />
-              </div>
-
-              {/* ✅ UPDATED: Birth Country Filter - NOW MULTI-SELECT */}
-              <div className="filter-group">
-                <label className="filter-label">Birth Country</label>
-                <Select
-                  options={countryOptions}
-                  value={filters.birthCountry}
-                  onChange={(options) => setFilters(prev => ({ ...prev, birthCountry: options || [] }))}
-                  styles={customSelectStyles}
-                  placeholder="Select countries..."
-                  isLoading={loadingCountries}
-                  isClearable
-                  isSearchable
-                  isMulti
-                />
-              </div>
-
-              {/* ✅ UPDATED: Birth City - Now shows message for multiple countries */}
-              <div className="filter-group">
-                <label className="filter-label">Birth City</label>
-                <Select
-                  options={birthPlaceOptions}
-                  value={filters.birthPlace}
-                  onChange={(options) => setFilters(prev => ({ ...prev, birthPlace: options || [] }))}
-                  onInputChange={(value) => handleLocationInputChange(value, 'birthPlace')}
-                  styles={customSelectStyles}
-                  placeholder={
-                    filters.birthCountry && filters.birthCountry.length > 0
-                      ? "Type city names..." 
-                      : "Select country first"
-                  }
-                  isLoading={loadingBirthPlace}
-                  isClearable
-                  isSearchable
-                  isMulti
-                  isDisabled={!filters.birthCountry || filters.birthCountry.length === 0}
-                  noOptionsMessage={() => 
-                    filters.birthCountry && filters.birthCountry.length > 0
-                      ? "Type to search cities" 
-                      : "Select a country first"
-                  }
-                  loadingMessage={LoadingMessage}
-                  components={{
-                    DropdownIndicator: () => null,
-                    IndicatorSeparator: () => null
-                  }}
-                />
-                <p className="filter-hint">
-                  {filters.birthCountry && filters.birthCountry.length > 0
-                    ? filters.birthCountry.length > 1
-                      ? `Searching in ${filters.birthCountry[0].label} (first selected country)`
-                      : "Type and select multiple cities"
-                    : "Select a country first"}
-                </p>
-              </div>
-
-              {/* ✅ UPDATED: Current Country Filter - NOW MULTI-SELECT */}
-              <div className="filter-group">
-                <label className="filter-label">Current Country</label>
-                <Select
-                  options={countryOptions}
-                  value={filters.currentCountry}
-                  onChange={(options) => setFilters(prev => ({ ...prev, currentCountry: options || [] }))}
-                  styles={customSelectStyles}
-                  placeholder="Select countries..."
-                  isLoading={loadingCountries}
-                  isClearable
-                  isSearchable
-                  isMulti
-                />
-              </div>
-
-              {/* ✅ UPDATED: Current City - Now shows message for multiple countries */}
-              <div className="filter-group">
-                <label className="filter-label">Current City</label>
-                <Select
-                  options={currentLocationOptions}
-                  value={filters.location}
-                  onChange={(options) => setFilters(prev => ({ ...prev, location: options || [] }))}
-                  onInputChange={(value) => handleLocationInputChange(value, 'currentLocation')}
-                  styles={customSelectStyles}
-                  placeholder={
-                    filters.currentCountry && filters.currentCountry.length > 0
-                      ? "Type city names..." 
-                      : "Select country first"
-                  }
-                  isLoading={loadingCurrentLocation}
-                  isClearable
-                  isSearchable
-                  isMulti
-                  isDisabled={!filters.currentCountry || filters.currentCountry.length === 0}
-                  noOptionsMessage={() => 
-                    filters.currentCountry && filters.currentCountry.length > 0
-                      ? "Type to search cities" 
-                      : "Select a country first"
-                  }
-                  loadingMessage={LoadingMessage}
-                  components={{
-                    DropdownIndicator: () => null,
-                    IndicatorSeparator: () => null
-                  }}
-                />
-                <p className="filter-hint">
-                  {filters.currentCountry && filters.currentCountry.length > 0
-                    ? filters.currentCountry.length > 1
-                      ? `Searching in ${filters.currentCountry[0].label} (first selected country)`
-                      : "Type and select multiple cities"
-                    : "Select a country first"}
-                </p>
-              </div>
-
-              {/* Residency Status */}
-              <div className="filter-group">
-                <label className="filter-label">Residency Status</label>
-                <Select
-                  options={residencyStatusOptions}
-                  value={filters.residencyStatus}
-                  onChange={(options) => setFilters(prev => ({ ...prev, residencyStatus: options || [] }))}
-                  styles={customSelectStyles}
-                  placeholder="Select statuses..."
-                  isMulti
-                />
-              </div>
-
-              {/* Profession */}
-              <div className="filter-group">
-                <label className="filter-label">Profession</label>
-                <Select
-                  options={professionOptions}
-                  value={filters.profession}
-                  onChange={(options) => setFilters(prev => ({ ...prev, profession: options || [] }))}
-                  styles={customSelectStyles}
-                  placeholder="Select professions..."
-                  isMulti
-                  isSearchable
-                />
-              </div>
-
-              {/* Education */}
-              <div className="filter-group">
-                <label className="filter-label">Education</label>
-                <Select
-                  options={educationOptions}
-                  value={filters.education}
-                  onChange={(options) => setFilters(prev => ({ ...prev, education: options || [] }))}
-                  styles={customSelectStyles}
-                  placeholder="Select education levels..."
-                  isMulti
-                />
-              </div>
-
-              {/* Languages */}
-              <div className="filter-group">
-                <label className="filter-label">Languages</label>
-                <Select
-                  options={languageOptions}
-                  value={filters.languages}
-                  onChange={(options) => setFilters(prev => ({ ...prev, languages: options || [] }))}
-                  styles={customSelectStyles}
-                  placeholder="Select languages..."
-                  isMulti
-                />
-              </div>
-
-              {/* Tags */}
-              <div className="filter-group">
-                <label className="filter-label">Tags</label>
-                <input
-                  type="text"
-                  className="filter-input tags-filter-input"
-                  placeholder="Hafidh, MJCET, Beard, Hijab"
-                  value={filters.tags}
-                  onChange={(e) => setFilters(prev => ({ ...prev, tags: e.target.value }))}
-                />
-                <p className="filter-hint">Separate tags with commas</p>
-              </div>
-
-              <button className="clear-filters-btn" onClick={clearFilters}>
-                Clear All Filters
-              </button>
             </div>
 
             <div className="profiles-section">
