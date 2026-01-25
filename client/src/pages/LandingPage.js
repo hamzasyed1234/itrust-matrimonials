@@ -109,7 +109,7 @@ function LandingPage() {
               
               <div className="feature">
                 <h3>🎯 Complete Your Profile</h3>
-                <p>Upon signing up, you must complete your profile before searching for matches.</p>
+                <p>Upon signing up, you must complete your profile before searching for your perfect match.</p>
               </div>
 
               <div className="feature">
@@ -119,7 +119,7 @@ function LandingPage() {
 
               <div className="feature">
                 <h3>💬 Get to Know Them</h3>
-                <p>Once accepted, the contact number appears on the Matches page.</p>
+                <p>Once accepted, the contact number becomes visible on the Matches page.</p>
                 <p>We recommend calling before sharing sensitive information.</p>
               </div>
             </div>
