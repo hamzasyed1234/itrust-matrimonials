@@ -17,6 +17,8 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
+      'https://itrustmuslimmatrimonials.com',
+      'https://www.itrustmuslimmatrimonials.com',
       process.env.CLIENT_URL,
       'http://localhost:3000',
       'http://localhost:5173'
@@ -147,5 +149,9 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Allowed origin: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
+  console.log(`🔗 Allowed origins:`, [
+    'https://itrustmuslimmatrimonials.com',
+    'https://www.itrustmuslimmatrimonials.com',
+    process.env.CLIENT_URL
+  ].filter(Boolean).join(', '));
 });
