@@ -37,6 +37,16 @@
   box-shadow: 0 6px 16px rgba(230, 99, 134, 0.4);
 }
 
+/* Non-clickable logo for admins */
+.navbar-logo.non-clickable {
+  cursor: default;
+}
+
+.navbar-logo.non-clickable:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(230, 99, 134, 0.3);
+}
+
 .navbar-heart-icon {
   font-size: 18px;
 }
