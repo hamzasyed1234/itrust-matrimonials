@@ -31,12 +31,7 @@ function AdminDashboard() {
     pages: 0
   });
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (!loading && (!user || !user.isAdmin)) {
-      navigate('/');
-    }
-  }, [user, loading, navigate]);
+
 
   // Fetch statistics
   useEffect(() => {

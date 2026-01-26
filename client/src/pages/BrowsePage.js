@@ -179,11 +179,7 @@ function BrowsePage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/');
-    }
-  }, [user, loading, navigate]);
+  
 
   // ✅ Fetch countries on mount
   useEffect(() => {

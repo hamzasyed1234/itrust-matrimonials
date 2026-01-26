@@ -19,11 +19,6 @@ function MatchesPage() {
   const [isMatched, setIsMatched] = useState(false);
   const [error, setError] = useState(null); // NEW: For themed notifications
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/');
-    }
-  }, [user, loading, navigate]);
 
   // Auto-hide error after 5 seconds
   useEffect(() => {

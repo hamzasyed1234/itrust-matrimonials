@@ -160,12 +160,7 @@ function HomePage() {
   }
 }, [error]);
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/');
-    }
-  }, [user, loading, navigate]);
+ 
 
   // Refresh user profile data when component mounts
   useEffect(() => {
