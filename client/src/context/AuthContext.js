@@ -22,19 +22,28 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.get('/profile');
       setUser(response.data.user);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      // If token is invalid, clear it
+      
+      // ✅ CRITICAL FIX: Clear invalid token and user state
       localStorage.removeItem('token');
       setUser(null);
+      
+      // ✅ ADDED: Redirect to login if on a protected page
+      const protectedRoutes = ['/home', '/browse', '/matches', '/feedback', '/admin'];
+      const currentPath = window.location.pathname;
+      
+      if (protectedRoutes.includes(currentPath)) {
+        window.location.href = '/';
+      }
+    } finally {
+      // ✅ CRITICAL FIX: Always set loading to false
       setLoading(false);
     }
   };
 
   const login = (token, userData) => {
     localStorage.setItem('token', token);
-    // ✅ UPDATED: Make sure isAdmin is included
     setUser({
       ...userData,
       isAdmin: userData.isAdmin || false
@@ -52,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, loading, fetchUserProfile }}>
       {children}
     </AuthContext.Provider>
   );
