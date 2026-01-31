@@ -77,7 +77,8 @@
 }
 
 .form-group input[type="email"],
-.form-group input[type="password"] {
+.form-group input[type="password"],
+.form-group input[type="text"] {
   width: 100%;
   padding: 12px 16px;
   background-color: #FFF5F7;
@@ -90,7 +91,8 @@
 }
 
 .form-group input[type="email"]:focus,
-.form-group input[type="password"]:focus {
+.form-group input[type="password"]:focus,
+.form-group input[type="text"]:focus {
   outline: none;
   border-color: #E66386;
   background-color: #FFFFFF;
@@ -98,7 +100,8 @@
 }
 
 .form-group input[type="email"]::placeholder,
-.form-group input[type="password"]::placeholder {
+.form-group input[type="password"]::placeholder,
+.form-group input[type="text"]::placeholder {
   color: #999999;
 }
 
@@ -113,6 +116,43 @@
   margin-top: -4px;
   text-align: left;
   font-weight: 500;
+}
+
+/* Password Input Wrapper */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 48px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999999;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.password-toggle-btn:hover {
+  color: #E66386;
+  background-color: rgba(230, 99, 134, 0.1);
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+  color: #E66386;
 }
 
 /* Submit Button */
@@ -190,9 +230,18 @@
   }
 
   .form-group input[type="email"],
-  .form-group input[type="password"] {
+  .form-group input[type="password"],
+  .form-group input[type="text"] {
     padding: 10px 14px;
     font-size: 14px;
+  }
+
+  .password-input-wrapper input {
+    padding-right: 44px;
+  }
+
+  .password-toggle-btn {
+    right: 10px;
   }
 
   .submit-btn {
