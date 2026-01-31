@@ -142,6 +142,10 @@ function HomePage() {
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState('');
 
+    // For delete account
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
   // Handle keyboard shortcuts
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !saving) {
@@ -511,6 +515,25 @@ const handleLocationInputChange = (inputValue, field) => {
       setError({ type: 'error', message: 'Failed to delete tag. Please try again.' });
     } finally {
       setSaving(false);
+    }
+  };
+
+    const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await api.delete('/profile/delete-account');
+      
+      // Logout and redirect to home
+      logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setError({ 
+        type: 'error', 
+        message: error.response?.data?.message || 'Failed to delete account. Please try again.' 
+      });
+      setDeletingAccount(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -1215,6 +1238,13 @@ const handleLocationInputChange = (inputValue, field) => {
                 </div>
               </div>
               <p className="stats-note">Statistics will update as you use the platform</p>
+                {/* ADD THIS BUTTON HERE */}
+                <button 
+                  className="delete-account-btn"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  🗑️ Delete Account
+                </button>
             </div>
           </div>
         </div>
@@ -1292,6 +1322,41 @@ const handleLocationInputChange = (inputValue, field) => {
           </div>
         </div>
       )}
+
+
+              {/* Delete Account Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="modal-overlay" onClick={() => !deletingAccount && setShowDeleteModal(false)}>
+            <div className="delete-account-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="delete-modal-icon">⚠️</div>
+              <h3>Delete Account?</h3>
+              <p className="delete-modal-warning">
+                This action is <strong>permanent</strong> and cannot be undone. 
+                All your data, matches, and conversations will be permanently deleted.
+              </p>
+              <p className="delete-modal-confirm">
+                Are you sure you want to delete your account?
+              </p>
+              
+              <div className="delete-modal-buttons">
+                <button 
+                  className="delete-confirm-btn" 
+                  onClick={handleDeleteAccount}
+                  disabled={deletingAccount}
+                >
+                  {deletingAccount ? 'Deleting...' : 'Yes, Delete My Account'}
+                </button>
+                <button 
+                  className="delete-cancel-btn" 
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deletingAccount}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
