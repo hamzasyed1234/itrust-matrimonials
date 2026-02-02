@@ -13,6 +13,9 @@ router.put('/update', protect, upload.single('profilePicture'), profileControlle
 // Get unique countries
 router.get('/countries', profileController.getCountries);
 
+// ✅ ADD THIS - Delete account route
+router.delete('/delete-account', protect, profileController.deleteAccount);
+
 // Search cities (optionally filtered by country)
 router.get('/search-cities', profileController.searchCities);
 

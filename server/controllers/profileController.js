@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Connection = require('../models/Connection'); // ✅ ADDED
 const axios = require('axios');
 const City = require('../models/City');
 
@@ -157,7 +158,7 @@ exports.updateProfile = async (req, res) => {
 // Now accepts optional 'country' parameter to filter cities by country
 exports.searchCities = async (req, res) => {
   try {
-    const { query, country } = req.query; // ✅ ADDED: country parameter
+    const { query, country } = req.query;
     
     if (!query || query.length < 2) {
       return res.json({ cities: [] });
@@ -166,7 +167,6 @@ exports.searchCities = async (req, res) => {
     // STEP 1: Search our database first (FAST)
     const searchRegex = new RegExp(`^${query}`, 'i');
     
-    // ✅ ADDED: Build search conditions with optional country filter
     const searchConditions = {
       $or: [
         { name: searchRegex },
@@ -174,12 +174,10 @@ exports.searchCities = async (req, res) => {
       ]
     };
     
-    // ✅ ADDED: Filter by country if provided
     if (country) {
       searchConditions.country = country;
     }
     
-    // ✅ UPDATED: Use searchConditions instead of inline query
     let cities = await City.find(searchConditions)
       .sort({ population: -1 })
       .limit(10)
@@ -188,7 +186,6 @@ exports.searchCities = async (req, res) => {
     
     // STEP 2: If we have results, return them immediately
     if (cities.length > 0) {
-      // ✅ UPDATED: Log now includes country filter if present
       console.log(`🔍 Search query: "${query}"${country ? ` | Country: ${country}` : ''} | Results: ${cities.length} | Source: database`);
       return res.json({ 
         cities: cities.map(c => ({
@@ -276,5 +273,44 @@ exports.getCountries = async (req, res) => {
   } catch (error) {
     console.error('Error fetching countries:', error);
     res.status(500).json({ message: 'Error fetching countries', error: error.message });
+  }
+};
+
+// ✅ NEW: Delete user account
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Find the user
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Delete all connections where this user is involved
+    await Connection.deleteMany({
+      $or: [
+        { userId: userId },
+        { targetUserId: userId }
+      ]
+    });
+    
+    // Delete the user account
+    await User.findByIdAndDelete(userId);
+    
+    console.log(`🗑️ User account deleted: ${user.email}`);
+    
+    res.status(200).json({ 
+      success: true,
+      message: 'Account deleted successfully' 
+    });
+    
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ 
+      message: 'Server error deleting account',
+      error: error.message 
+    });
   }
 };
