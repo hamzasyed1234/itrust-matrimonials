@@ -279,12 +279,12 @@ function BrowsePage() {
     }
   };
 
-  // ✅ UPDATED: Debounced city search with MULTIPLE countries filter
+  // ✅ FIXED: Debounced city search - now uses country.value (country code) instead of country.label
   const handleLocationInputChange = (inputValue, field) => {
     const setOptions = field === 'birthPlace' ? setBirthPlaceOptions : setCurrentLocationOptions;
     const setLoading = field === 'birthPlace' ? setLoadingBirthPlace : setLoadingCurrentLocation;
     
-    // ✅ UPDATED: Get first selected country if multiple countries selected
+    // ✅ FIXED: Use country.value (country code like "IN", "CA") instead of country.label
     const countries = field === 'birthPlace' ? filters.birthCountry : filters.currentCountry;
     const country = (countries && countries.length > 0) ? countries[0].value : null;
     
@@ -339,7 +339,7 @@ function BrowsePage() {
     return null;
   };
 
-  // ✅ UPDATED: Filtering logic with MULTIPLE countries support
+  // ✅ FIXED: Filtering logic now uses country.value (country code) instead of country.label
   useEffect(() => {
     let filtered = [...profiles];
 
@@ -396,7 +396,7 @@ function BrowsePage() {
       });
     }
 
-    // ✅ UPDATED: Birth Place filter with MULTIPLE countries support
+    // ✅ FIXED: Birth Place filter - now uses country.value (country code) instead of country.label
     if (filters.birthPlace.length > 0) {
       filtered = filtered.filter(profile => {
         if (!profile.birthPlace) return false;
@@ -405,16 +405,16 @@ function BrowsePage() {
         );
       });
     } else if (filters.birthCountry && filters.birthCountry.length > 0) {
-      // Filter by countries if no cities selected
+      // ✅ FIXED: Filter by country codes (e.g., "IN", "CA") instead of country names
       filtered = filtered.filter(profile => {
         if (!profile.birthPlace) return false;
         return filters.birthCountry.some(filterCountry =>
-          profile.birthPlace.toLowerCase().includes(filterCountry.label.toLowerCase())
+          profile.birthPlace.toLowerCase().includes(filterCountry.value.toLowerCase())
         );
       });
     }
 
-    // ✅ UPDATED: Current Location filter with MULTIPLE countries support
+    // ✅ FIXED: Current Location filter - now uses country.value (country code) instead of country.label
     if (filters.location.length > 0) {
       filtered = filtered.filter(profile => {
         if (!profile.currentLocation) return false;
@@ -423,11 +423,11 @@ function BrowsePage() {
         );
       });
     } else if (filters.currentCountry && filters.currentCountry.length > 0) {
-      // Filter by countries if no cities selected
+      // ✅ FIXED: Filter by country codes (e.g., "IN", "CA") instead of country names
       filtered = filtered.filter(profile => {
         if (!profile.currentLocation) return false;
         return filters.currentCountry.some(filterCountry =>
-          profile.currentLocation.toLowerCase().includes(filterCountry.label.toLowerCase())
+          profile.currentLocation.toLowerCase().includes(filterCountry.value.toLowerCase())
         );
       });
     }
