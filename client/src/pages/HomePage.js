@@ -145,6 +145,9 @@ function HomePage() {
     // For delete account
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteStage, setDeleteStage] = useState('confirm'); // 'confirm', 'deleting', 'complete'
+  const [deleteProgress, setDeleteProgress] = useState(0);
+  const [deleteMessage, setDeleteMessage] = useState('');
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e) => {
@@ -518,24 +521,59 @@ const handleLocationInputChange = (inputValue, field) => {
     }
   };
 
-    const handleDeleteAccount = async () => {
-    setDeletingAccount(true);
-    try {
-      await api.delete('/profile/delete-account');
+        const handleDeleteAccount = async () => {
+      setDeletingAccount(true);
+      setDeleteStage('deleting');
+      setDeleteProgress(0);
       
-      // Logout and redirect to home
-      logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      setError({ 
-        type: 'error', 
-        message: error.response?.data?.message || 'Failed to delete account. Please try again.' 
-      });
-      setDeletingAccount(false);
-      setShowDeleteModal(false);
-    }
-  };
+      // Stage 1: Backing up data
+      setDeleteMessage('Preparing to erase everythin...');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setDeleteProgress(20);
+      
+      // Stage 2: Removing connections
+      setDeleteMessage('Removing your information...');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setDeleteProgress(40);
+      
+      // Stage 3: Erasing profile
+      setDeleteMessage('Erasing activity and history...');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setDeleteProgress(60);
+      
+      // Stage 4: Clearing cache
+      setDeleteMessage('Closing this chapter...');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setDeleteProgress(80);
+      
+      try {
+        // Stage 5: Final deletion
+        setDeleteMessage('Account deleted...');
+        await api.delete('/profile/delete-account');
+        setDeleteProgress(100);
+        
+        // Show completion message
+        setDeleteStage('complete');
+        setDeleteMessage('Account deleted successfully!');
+        
+        // Wait 2 seconds before redirecting
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Logout and redirect to home
+        logout();
+        navigate('/');
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        setError({ 
+          type: 'error', 
+          message: error.response?.data?.message || 'Failed to delete account. Please try again.' 
+        });
+        setDeletingAccount(false);
+        setShowDeleteModal(false);
+        setDeleteStage('confirm');
+        setDeleteProgress(0);
+      }
+    };
 
   if (loading) {
     return (
@@ -1324,36 +1362,88 @@ const handleLocationInputChange = (inputValue, field) => {
       )}
 
 
-              {/* Delete Account Confirmation Modal */}
+              
+        {/* Delete Account Confirmation Modal */}
         {showDeleteModal && (
           <div className="modal-overlay" onClick={() => !deletingAccount && setShowDeleteModal(false)}>
             <div className="delete-account-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="delete-modal-icon">⚠️</div>
-              <h3>Delete Account?</h3>
-              <p className="delete-modal-warning">
-                This action is <strong>permanent</strong> and cannot be undone. 
-                All your data, matches, and conversations will be permanently deleted.
-              </p>
-              <p className="delete-modal-confirm">
-                Are you sure you want to delete your account?
-              </p>
               
-              <div className="delete-modal-buttons">
-                <button 
-                  className="delete-confirm-btn" 
-                  onClick={handleDeleteAccount}
-                  disabled={deletingAccount}
-                >
-                  {deletingAccount ? 'Deleting...' : 'Yes, Delete My Account'}
-                </button>
-                <button 
-                  className="delete-cancel-btn" 
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={deletingAccount}
-                >
-                  Cancel
-                </button>
-              </div>
+              {/* STAGE 1: Confirmation */}
+              {deleteStage === 'confirm' && (
+                <>
+                  <div className="delete-modal-icon">⚠️</div>
+                  <h3>Delete Account?</h3>
+                  <p className="delete-modal-warning">
+                    This action is <strong>permanent</strong> and cannot be undone. 
+                    All your data, matches, and conversations will be permanently deleted.
+                  </p>
+                  <p className="delete-modal-confirm">
+                    Are you sure you want to delete your account?
+                  </p>
+                  
+                  <div className="delete-modal-buttons">
+                    <button 
+                      className="delete-confirm-btn" 
+                      onClick={handleDeleteAccount}
+                      disabled={deletingAccount}
+                    >
+                      {deletingAccount ? 'Processing...' : 'Yes, Delete My Account'}
+                    </button>
+                    <button 
+                      className="delete-cancel-btn" 
+                      onClick={() => setShowDeleteModal(false)}
+                      disabled={deletingAccount}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* STAGE 2: Deleting Progress */}
+              {deleteStage === 'deleting' && (
+                <>
+                  <div className="delete-modal-icon deleting">🗑️</div>
+                  <h3>Deleting Account...</h3>
+                  <p className="delete-progress-message">{deleteMessage}</p>
+                  
+                  <div className="delete-progress-container">
+                    <div className="delete-progress-bar">
+                      <div 
+                        className="delete-progress-fill" 
+                        style={{ width: `${deleteProgress}%` }}
+                      >
+                        <span className="delete-progress-text">{deleteProgress}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="delete-loading-dots">
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                  </div>
+                </>
+              )}
+
+              {/* STAGE 3: Completion */}
+              {deleteStage === 'complete' && (
+                <>
+                  <div className="delete-modal-icon complete">✓</div>
+                  <h3>Account Deleted</h3>
+                  <p className="delete-complete-message">
+                    Your account has been successfully deleted.
+                    <br />
+                    We'll miss you! 💔
+                  </p>
+                  
+                  <div className="delete-complete-spinner">
+                    <div className="spinner"></div>
+                    <p>Redirecting you...</p>
+                  </div>
+                </>
+              )}
+              
             </div>
           </div>
         )}

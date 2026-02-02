@@ -2089,6 +2089,8 @@ div[class*="menu"] {
   }
 }
 
+/* ============= DELETE ACCOUNT STYLES ============= */
+
 /* Delete Account Button */
 .delete-account-btn {
   width: 100%;
@@ -2126,6 +2128,10 @@ div[class*="menu"] {
   animation: slideUp 0.3s ease;
   border: 1px solid #FFE0E9;
   box-shadow: 0 25px 70px rgba(220, 53, 69, 0.3);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .delete-modal-icon {
@@ -2221,7 +2227,165 @@ div[class*="menu"] {
   cursor: not-allowed;
 }
 
-/* Mobile adjustments */
+/* ============= DELETE PROGRESS STYLES ============= */
+
+/* Delete Progress Container */
+.delete-progress-container {
+  width: 100%;
+  margin: 24px 0;
+}
+
+.delete-progress-bar {
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid #ffcccc;
+  box-shadow: inset 0 2px 8px rgba(220, 53, 69, 0.1);
+}
+
+.delete-progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.delete-progress-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.delete-progress-text {
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  z-index: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.delete-progress-message {
+  color: #666666;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  text-align: center;
+  min-height: 24px;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Loading Dots */
+.delete-loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  background: #dc3545;
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.dot:nth-child(1) { animation-delay: -0.32s; }
+.dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Animated Icons */
+.delete-modal-icon.deleting {
+  animation: shake 0.5s ease infinite;
+  font-size: 64px;
+}
+
+.delete-modal-icon.complete {
+  background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+  color: white;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 48px;
+  font-weight: bold;
+  animation: scaleIn 0.5s ease;
+  box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
+}
+
+@keyframes scaleIn {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Complete Message */
+.delete-complete-message {
+  color: #666666;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+/* Complete Spinner */
+.delete-complete-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.delete-complete-spinner p {
+  color: #999999;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #FFE0E9;
+  border-top: 4px solid #E66386;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile Responsive */
 @media (max-width: 480px) {
   .delete-account-modal {
     padding: 32px 24px;
@@ -2248,4 +2412,17 @@ div[class*="menu"] {
     padding: 14px;
     font-size: 15px;
   }
+
+  .delete-progress-bar { height: 35px; }
+  .delete-progress-text { font-size: 14px; }
+  .delete-progress-message { font-size: 14px; }
+  .delete-modal-icon.deleting { font-size: 48px; }
+  .delete-modal-icon.complete {
+    width: 64px;
+    height: 64px;
+    font-size: 36px;
+  }
+  .delete-complete-message { font-size: 14px; }
+  .spinner { width: 32px; height: 32px; border-width: 3px; }
+  .dot { width: 10px; height: 10px; }
 }
