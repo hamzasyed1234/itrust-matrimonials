@@ -339,7 +339,7 @@ function BrowsePage() {
     return null;
   };
 
-  // ✅ FIXED: Filtering logic now uses country.value (country code) instead of country.label
+  // ✅ FIXED: Filtering logic now uses country.value (country code) with more precise matching
   useEffect(() => {
     let filtered = [...profiles];
 
@@ -396,7 +396,7 @@ function BrowsePage() {
       });
     }
 
-    // ✅ FIXED: Birth Place filter - now uses country.value (country code) instead of country.label
+    // ✅ FIXED: Birth Place filter - now uses country.value (country code) with precise matching
     if (filters.birthPlace.length > 0) {
       filtered = filtered.filter(profile => {
         if (!profile.birthPlace) return false;
@@ -405,16 +405,21 @@ function BrowsePage() {
         );
       });
     } else if (filters.birthCountry && filters.birthCountry.length > 0) {
-      // ✅ FIXED: Filter by country codes (e.g., "IN", "CA") instead of country names
+      // ✅ FIXED: Filter by country codes - check if location ends with country code
       filtered = filtered.filter(profile => {
         if (!profile.birthPlace) return false;
-        return filters.birthCountry.some(filterCountry =>
-          profile.birthPlace.toLowerCase().includes(filterCountry.value.toLowerCase())
-        );
+        const locationLower = profile.birthPlace.toLowerCase().trim();
+        return filters.birthCountry.some(filterCountry => {
+          const countryCode = filterCountry.value.toLowerCase();
+          // Check if location ends with the country code (e.g., ", ca" or ", au")
+          return locationLower.endsWith(`, ${countryCode}`) || 
+                 locationLower.endsWith(` ${countryCode}`) ||
+                 locationLower === countryCode;
+        });
       });
     }
 
-    // ✅ FIXED: Current Location filter - now uses country.value (country code) instead of country.label
+    // ✅ FIXED: Current Location filter - now uses country.value (country code) with precise matching
     if (filters.location.length > 0) {
       filtered = filtered.filter(profile => {
         if (!profile.currentLocation) return false;
@@ -423,12 +428,17 @@ function BrowsePage() {
         );
       });
     } else if (filters.currentCountry && filters.currentCountry.length > 0) {
-      // ✅ FIXED: Filter by country codes (e.g., "IN", "CA") instead of country names
+      // ✅ FIXED: Filter by country codes - check if location ends with country code
       filtered = filtered.filter(profile => {
         if (!profile.currentLocation) return false;
-        return filters.currentCountry.some(filterCountry =>
-          profile.currentLocation.toLowerCase().includes(filterCountry.value.toLowerCase())
-        );
+        const locationLower = profile.currentLocation.toLowerCase().trim();
+        return filters.currentCountry.some(filterCountry => {
+          const countryCode = filterCountry.value.toLowerCase();
+          // Check if location ends with the country code (e.g., ", ca" or ", au")
+          return locationLower.endsWith(`, ${countryCode}`) || 
+                 locationLower.endsWith(` ${countryCode}`) ||
+                 locationLower === countryCode;
+        });
       });
     }
 
