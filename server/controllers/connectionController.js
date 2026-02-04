@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Connection = require('../models/Connection');
+const emailService = require('../utils/emailService');
 
 // Send connection request
 exports.sendConnectionRequest = async (req, res) => {
@@ -26,8 +27,6 @@ exports.sendConnectionRequest = async (req, res) => {
     if (!sender || !receiver) {
       return res.status(404).json({ message: 'User not found' });
     }
-
-    // REMOVED: Match limit checks for sender and receiver
 
     // Check for existing connection
     const existingConnection = await Connection.findOne({
@@ -66,6 +65,24 @@ exports.sendConnectionRequest = async (req, res) => {
     await User.findByIdAndUpdate(targetId, {
       $inc: { pendingMatchRequests: 1 }
     });
+
+    // ✨ NEW: Send email notifications
+    const senderFullName = `${sender.firstName} ${sender.lastName}`;
+    const receiverFullName = `${receiver.firstName} ${receiver.lastName}`;
+    
+    // Send confirmation email to sender
+    emailService.sendMatchRequestSentEmail(
+      sender.email,
+      senderFullName,
+      receiverFullName
+    );
+    
+    // Send notification email to receiver
+    emailService.sendMatchRequestReceivedEmail(
+      receiver.email,
+      receiverFullName,
+      senderFullName
+    );
 
     console.log('✅ Connection request sent successfully');
 
@@ -135,17 +152,38 @@ exports.acceptConnectionRequest = async (req, res) => {
       });
     }
 
-    // REMOVED: Match limit check for receiver
+    // Get user details for email
+    const receiver = await User.findById(userId);
+    const sender = await User.findById(connection.sender);
 
+    if (!receiver || !sender) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update connection status
     connection.status = 'accepted';
     await connection.save();
 
+    // Update match counts
     await User.findByIdAndUpdate(userId, {
       $inc: { matchCount: 1, pendingMatchRequests: -1 }
     });
     await User.findByIdAndUpdate(connection.sender, {
       $inc: { matchCount: 1 }
     });
+
+    // ✨ NEW: Send acceptance email to the original sender
+    const senderFullName = `${sender.firstName} ${sender.lastName}`;
+    const receiverFullName = `${receiver.firstName} ${receiver.lastName}`;
+    
+    emailService.sendMatchRequestAcceptedEmail(
+      sender.email,
+      senderFullName,
+      receiverFullName,
+      receiver.phoneNumber || null // Include phone number if available
+    );
+
+    console.log('✅ Connection accepted and email sent');
 
     res.json({
       success: true,
@@ -186,12 +224,34 @@ exports.declineConnectionRequest = async (req, res) => {
       });
     }
 
+    // Get user details for email
+    const receiver = await User.findById(userId);
+    const sender = await User.findById(connection.sender);
+
+    if (!receiver || !sender) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update connection status
     connection.status = 'declined';
     await connection.save();
 
+    // Update pending count
     await User.findByIdAndUpdate(userId, {
       $inc: { pendingMatchRequests: -1 }
     });
+
+    // ✨ NEW: Send decline email to the original sender
+    const senderFullName = `${sender.firstName} ${sender.lastName}`;
+    const receiverFullName = `${receiver.firstName} ${receiver.lastName}`;
+    
+    emailService.sendMatchRequestDeclinedEmail(
+      sender.email,
+      senderFullName,
+      receiverFullName
+    );
+
+    console.log('✅ Connection declined and email sent');
 
     res.json({
       success: true,
@@ -277,7 +337,7 @@ exports.getSentRequests = async (req, res) => {
   }
 };
 
-// NEW: Get connection statuses for all users the current user has interacted with
+// Get connection statuses for all users the current user has interacted with
 exports.getConnectionStatuses = async (req, res) => {
   try {
     const userId = req.user.id;
