@@ -115,7 +115,7 @@ function MatchesPage() {
   const openWhatsApp = (phoneNumber) => {
     const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
     const senderName = user?.firstName || 'your match';
-    const message = encodeURIComponent(`Assalamu Alaikum! I'm ${senderName}. I matched with you on iTrust Muslim Matrimonials and would like to get to know you better.`);
+    const message = encodeURIComponent(`Assalamu Alaikum! I'm ${senderName}. I matched with your profile on iTrust Muslim Matrimonials and would like to get to know you better.`);
     window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
   };
 
