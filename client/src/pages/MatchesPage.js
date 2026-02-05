@@ -17,7 +17,8 @@ function MatchesPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isMatched, setIsMatched] = useState(false);
-  const [error, setError] = useState(null); // NEW: For themed notifications
+  const [error, setError] = useState(null);
+  const [showDeclineConfirm, setShowDeclineConfirm] = useState(false); // ✨ NEW: Decline confirmation
 
 
   // Auto-hide error after 5 seconds
@@ -163,12 +164,24 @@ function MatchesPage() {
     }
   };
 
-  // Decline connection request
-  const handleDeclineRequest = async () => {
+  // ✨ NEW: Show decline confirmation
+  const handleDeclineClick = () => {
+    setShowDeclineConfirm(true);
+  };
+
+  // ✨ NEW: Cancel decline
+  const handleCancelDecline = () => {
+    setShowDeclineConfirm(false);
+  };
+
+  // ✨ UPDATED: Decline connection request (now confirms first)
+  const handleConfirmDecline = async () => {
     if (!selectedProfile || !selectedProfile.requestId) return;
 
     setSaving(true);
     setError(null);
+    setShowDeclineConfirm(false); // Close confirmation
+    
     try {
       const response = await api.put(`/connections/decline/${selectedProfile.requestId}`);
       if (response.data.success) {
@@ -186,22 +199,22 @@ function MatchesPage() {
     }
   };
 
-
-if (loading) {
-  return (
-    <div className="matches-page">
-      <Navbar onLogout={handleLogout} activeTab="matches" />
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p className="loading-text">Loading matches...</p>
+  // Early returns for loading and no user
+  if (loading) {
+    return (
+      <div className="matches-page">
+        <Navbar onLogout={handleLogout} activeTab="matches" />
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Loading matches...</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-if (!user) {
-  return null;
-}
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="matches-page">
@@ -583,7 +596,7 @@ if (!user) {
               <div className="modal-actions">
                 <button
                   className="decline-modal-btn"
-                  onClick={handleDeclineRequest}
+                  onClick={handleDeclineClick}
                   disabled={saving}
                 >
                   {saving ? '...' : '✗ Decline'}
@@ -597,6 +610,36 @@ if (!user) {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ✨ NEW: Decline Confirmation Modal */}
+      {showDeclineConfirm && (
+        <div className="decline-confirm-overlay" onClick={handleCancelDecline}>
+          <div className="decline-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="decline-confirm-icon">⚠️</div>
+            <h3 className="decline-confirm-title">Decline Connection?</h3>
+            <p className="decline-confirm-message">
+              Are you sure you want to decline this connection request from <strong>{selectedProfile?.firstName}</strong>? 
+              This action cannot be undone.
+            </p>
+            <div className="decline-confirm-actions">
+              <button
+                className="decline-cancel-btn"
+                onClick={handleCancelDecline}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+              <button
+                className="decline-proceed-btn"
+                onClick={handleConfirmDecline}
+                disabled={saving}
+              >
+                {saving ? 'Declining...' : 'Yes, Decline'}
+              </button>
+            </div>
           </div>
         </div>
       )}
