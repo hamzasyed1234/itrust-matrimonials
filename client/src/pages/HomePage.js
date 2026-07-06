@@ -123,6 +123,7 @@ function HomePage() {
   // ALL STATE DECLARATIONS FIRST
   const [error, setError] = useState(null);
   const [matches, setMatches] = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const { user, logout, loading, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -209,27 +210,36 @@ function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
- // Fetch matches - only refetch when match count changes
-useEffect(() => {
-  const fetchMatches = async () => {
-    if (user && user.matchCount > 0) {
+  // Fetch live match data (accepted connections + pending requests).
+  // These come straight from the same endpoints MatchesPage uses, so the
+  // Home page, Navbar badge, and Matches page can never drift out of sync.
+  useEffect(() => {
+    const fetchMatchData = async () => {
+      if (!user) return;
       setLoadingMatches(true);
       try {
-        const response = await api.get('/connections/my-connections');
-        if (response.data.success) {
-          setMatches(response.data.connections);
+        const [matchesRes, pendingRes] = await Promise.all([
+          api.get('/connections/my-connections'),
+          api.get('/connections/pending')
+        ]);
+
+        if (matchesRes.data.success) {
+          setMatches(matchesRes.data.connections || []);
+        }
+        if (pendingRes.data.success) {
+          setPendingCount(pendingRes.data.requests?.length || 0);
         }
       } catch (error) {
-        console.error('Error fetching matches:', error);
+        console.error('Error fetching match data:', error);
       } finally {
         setLoadingMatches(false);
       }
-    }
-  };
+    };
 
-  fetchMatches();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [user?.matchCount]);
+    fetchMatchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?._id]);
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -1199,14 +1209,14 @@ const handleLocationInputChange = (inputValue, field) => {
             <div className="matches-card">
               <div className="card-header">
                 <h3>💕 Matches</h3>
-                <span className="match-count">{user.matchCount || 0}</span>
+                <span className="match-count">{matches.length}</span>
               </div>
               <div className="matches-content">
                 {loadingMatches ? (
                   <div className="loading-matches">
                     <p>Loading matches...</p>
                   </div>
-                ) : (user.matchCount || 0) === 0 ? (
+                ) : matches.length === 0 ? (
                   <div className="no-matches">
                     <span className="empty-icon">💔</span>
                     <p>No matches yet</p>
@@ -1271,7 +1281,7 @@ const handleLocationInputChange = (inputValue, field) => {
                 >
                   <div className="stat-icon">💝</div>
                   <div className="stat-info">
-                    <span className="stat-value">{user.pendingMatchRequests || 0}</span>
+                    <span className="stat-value">{pendingCount}</span>
                     <span className="stat-label">Connection Requests</span>
                   </div>
                 </div>
@@ -1282,7 +1292,7 @@ const handleLocationInputChange = (inputValue, field) => {
                 >
                   <div className="stat-icon">💬</div>
                   <div className="stat-info">
-                    <span className="stat-value">{user.matchCount || 0}</span>
+                    <span className="stat-value">{matches.length}</span>
                     <span className="stat-label">Active Conversations</span>
                   </div>
                 </div>
@@ -1307,7 +1317,7 @@ const handleLocationInputChange = (inputValue, field) => {
             <button className="modal-close-btn" onClick={() => setShowAddInfo(false)}>✕</button>
             <h3>Add Tags</h3>
             <p className="modal-subtitle">
-              Add tags to describe yourself (Hafidh, MJCET, Hanafi, No Dargha, Hijab, Beard etc.)
+              Add tags to describe yourself (Hafidh, 2 Brothers,  MJCET, Hanafi, No Dargha, Hijab, Beard etc.)
             </p>
             
             <div className="modal-form">
@@ -1321,7 +1331,7 @@ const handleLocationInputChange = (inputValue, field) => {
                       setNewTag(e.target.value);
                     }
                   }}
-                  placeholder="Hafidh, MJCET, Hanafi, No Dargha, Hijab, Beard"
+                  placeholder="Hafidh, 2 Brothers, MJCET, Hanafi, No Dargha, Hijab, Beard"
                   maxLength={20}
                   autoFocus
                   onKeyPress={(e) => {

@@ -27,6 +27,18 @@ if (!process.env.EMAIL_FROM || !process.env.EMAIL_PASSWORD) {
   });
 }
 
+// ============================================================================
+// FRONTEND URL
+// ============================================================================
+// Reuses the CLIENT_URL variable you already have set on your host (Render,
+// etc.) so there's no need to add a duplicate env var. Also checks
+// FRONTEND_URL in case that's what's used elsewhere, and finally falls back
+// to your real production domain (never localhost) if neither is set.
+const FRONTEND_URL =
+  process.env.CLIENT_URL ||
+  process.env.FRONTEND_URL ||
+  'https://itrustmuslimmatrimonials.com';
+
 // Send verification email with code
 exports.sendVerificationEmail = async (email, code, firstName) => {
   try {
@@ -135,7 +147,7 @@ exports.sendMatchRequestSentEmail = async (senderEmail, senderName, receiverName
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/matches" 
+              <a href="${FRONTEND_URL}/matches" 
                  style="display: inline-block; background: linear-gradient(135deg, #E66386 0%, #ff7fa0 100%); color: white; padding: 14px 35px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px;">
                 View Your Matches
               </a>
@@ -185,7 +197,7 @@ exports.sendMatchRequestReceivedEmail = async (receiverEmail, receiverName, send
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/matches" 
+              <a href="${FRONTEND_URL}/matches" 
                  style="display: inline-block; background: linear-gradient(135deg, #E66386 0%, #ff7fa0 100%); color: white; padding: 14px 35px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px;">
                 Review Request
               </a>
@@ -247,7 +259,7 @@ exports.sendMatchRequestAcceptedEmail = async (senderEmail, senderName, receiver
             ` : ''}
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/matches" 
+              <a href="${FRONTEND_URL}/matches" 
                  style="display: inline-block; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 14px 35px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px;">
                 View Connection
               </a>
@@ -301,7 +313,7 @@ exports.sendMatchRequestDeclinedEmail = async (senderEmail, senderName, receiver
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/browse" 
+              <a href="${FRONTEND_URL}/browse" 
                  style="display: inline-block; background: linear-gradient(135deg, #E66386 0%, #ff7fa0 100%); color: white; padding: 14px 35px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px;">
                 Explore More Profiles
               </a>

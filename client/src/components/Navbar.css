@@ -58,6 +58,7 @@
 }
 
 .nav-btn {
+  position: relative;
   padding: 8px 18px;
   background: transparent;
   color: #666666;
@@ -79,6 +80,24 @@
   color: #E66386;
   background-color: #FFE0E9;
   font-weight: 600;
+}
+
+/* Notification badge for pending match requests */
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 6px;
+  background: #E66386;
+  color: #FFFFFF;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+  box-shadow: 0 2px 6px rgba(230, 99, 134, 0.4);
 }
 
 .logout-btn {
